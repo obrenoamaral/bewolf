@@ -64,7 +64,7 @@
 
         formData.forEach((value, key) => {
             if (key.startsWith('answers[')) {
-                const questionId = key.match(/\d+/)[0]; // Extrai apenas o número do ID da questão
+                const questionId = key.match(/\d+/)[0];
                 answers[questionId] = value;
             }
         });

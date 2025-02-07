@@ -6,6 +6,7 @@ use App\Models\Client;
 use App\Models\ClientAnswer;
 use App\Models\Question;
 use Illuminate\Http\Request;
+use App\http\Controllers\DiagnosisController;
 
 class FormController extends Controller
 {
@@ -19,13 +20,10 @@ class FormController extends Controller
     public function submitInfo(Request $request)
     {
         try {
-            // Decodifica as respostas do formulário
             $answers = json_decode($request->input('answers'), true);
 
-            // Verifica se o cliente já existe
             $client = Client::where('email', $request->input('email'))->first();
 
-            // Se não existir, cria um novo
             if (!$client) {
                 $client = Client::create([
                     'name' => $request->input('name'),
@@ -35,7 +33,6 @@ class FormController extends Controller
                 ]);
             }
 
-            // Salva as respostas do cliente
             foreach ($answers as $questionId => $answerId) {
                 ClientAnswer::updateOrCreate(
                     ['client_id' => $client->id, 'question_id' => $questionId],
@@ -43,23 +40,22 @@ class FormController extends Controller
                 );
             }
 
-            return redirect('/form')->with('success', 'Respostas enviadas com sucesso!');
+            $diagnosisController = new DiagnosisController();
+            $diagnosisController->generateReport($client->id);
+
+            return redirect('/thankyou')->with('success', 'Respostas enviadas com sucesso! O relatório foi enviado para seu e-mail.');
         } catch (\Exception $e) {
             return redirect('/form')->with('error', 'Ocorreu um erro ao enviar as respostas.');
         }
     }
 
-
-
     public function submitForm(Request $request)
     {
-        // Valida as respostas do formulário
         $request->validate([
             'answers' => 'required|array',
-            'answers.*' => 'required|exists:answers,id', // Verifica se as respostas existem na tabela `answers`
+            'answers.*' => 'required|exists:answers,id',
         ]);
 
-        // Armazena as respostas na sessão para uso posterior no popup
         session(['answers' => $request->input('answers')]);
 
     }

@@ -36,6 +36,16 @@
 
                     <label class="block text-gray-100 font-medium mt-2">Solução:</label>
                     <input name="answers[0][solution]" type="text" required placeholder="Solução" class="w-full p-2 bg-transparent rounded-lg mt-1 text-gray-100"/>
+
+                    <label class="block text-gray-100 font-medium mt-2">Título do Ponto Forte/Fraco:</label>
+                    <input name="answers[0][strength_weakness_title]" type="text" placeholder="Título" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+
+                    <label class="block text-gray-100 font-medium mt-2">Classificação:</label>
+                    <select name="answers[0][strength_weakness]" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100">
+                        <option value="">Selecione</option>
+                        <option value="strong">Ponto Forte</option>
+                        <option value="weak">Ponto Fraco</option>
+                    </select>
                 </div>
             </div>
 
@@ -55,36 +65,51 @@
         document.addEventListener("DOMContentLoaded", function() {
             let answerIndex = 1;
 
+            const container = document.getElementById("answers-container");
+            const addAnswerBtn = document.getElementById("add-answer");
+
             // Adicionar nova resposta
-            document.getElementById("add-answer").addEventListener("click", function() {
-                const container = document.getElementById("answers-container");
+            addAnswerBtn.addEventListener("click", function() {
                 const answerGroup = document.createElement("div");
                 answerGroup.classList.add("answer-group", "mt-4", "p-4", "border", "border-gray-600", "rounded-lg");
                 answerGroup.innerHTML = `
-                    <label class="block text-gray-100 font-medium">Resposta ${answerIndex + 1}:</label>
-                    <input name="answers[${answerIndex}][answer]" type="text" required placeholder="Resposta" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+                <label class="block text-gray-100 font-medium">Resposta ${answerIndex + 1}:</label>
+                <input name="answers[${answerIndex}][answer]" type="text" required placeholder="Resposta" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
 
-                    <label class="block text-gray-100 font-medium mt-2">Peso:</label>
-                    <input name="answers[${answerIndex}][weight]" type="number" required placeholder="Peso" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+                <label class="block text-gray-100 font-medium mt-2">Peso:</label>
+                <input name="answers[${answerIndex}][weight]" type="number" required placeholder="Peso" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
 
-                    <label class="block text-gray-100 font-medium mt-2">Diagnóstico:</label>
-                    <input name="answers[${answerIndex}][diagnosis]" type="text" required placeholder="Diagnóstico" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+                <label class="block text-gray-100 font-medium mt-2">Diagnóstico:</label>
+                <input name="answers[${answerIndex}][diagnosis]" type="text" required placeholder="Diagnóstico" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
 
-                    <label class="block text-gray-100 font-medium mt-2">Solução:</label>
-                    <input name="answers[${answerIndex}][solution]" type="text" required placeholder="Solução" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+                <label class="block text-gray-100 font-medium mt-2">Solução:</label>
+                <input name="answers[${answerIndex}][solution]" type="text" required placeholder="Solução" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
 
-                    <button type="button" class="remove-answer mt-2 text-red-500 hover:text-red-700 text-sm">
-                        Remover Resposta
-                    </button>
-                `;
+                <label class="block text-gray-100 font-medium mt-2">Título do Ponto Forte/Fraco:</label>
+                <input name="answers[${answerIndex}][strength_weakness_title]" type="text" placeholder="Título" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+
+                <label class="block text-gray-100 font-medium mt-2">Classificação:</label>
+                <select name="answers[${answerIndex}][strength_weakness]" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100">
+                    <option value="">Selecione</option>
+                    <option value="strong">Ponto Forte</option>
+                    <option value="weak">Ponto Fraco</option>
+                </select>
+
+                <button type="button" class="remove-answer mt-2 text-red-500 hover:text-red-700 text-sm">
+                    Remover Resposta
+                </button>`;
+
                 container.appendChild(answerGroup);
                 answerIndex++;
+            });
 
-                // Adicionar evento de remoção para o novo botão
-                answerGroup.querySelector(".remove-answer").addEventListener("click", function() {
-                    container.removeChild(answerGroup);
-                });
+            // Remover resposta (Event Delegation)
+            container.addEventListener("click", function(event) {
+                if (event.target.classList.contains("remove-answer")) {
+                    event.target.closest(".answer-group").remove();
+                }
             });
         });
     </script>
+
 </x-app-layout>

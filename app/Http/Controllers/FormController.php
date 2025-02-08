@@ -6,7 +6,7 @@ use App\Models\Client;
 use App\Models\ClientAnswer;
 use App\Models\Question;
 use Illuminate\Http\Request;
-use App\http\Controllers\DiagnosisController;
+use App\Http\Controllers\DiagnosisController; // Correct
 
 class FormController extends Controller
 {

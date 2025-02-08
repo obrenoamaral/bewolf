@@ -9,7 +9,6 @@ use App\Http\Controllers\QuestionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [FormController::class, 'showForm'])->name('form.show');
-Route::post('/form/submit', [FormController::class, 'submitForm'])->name('form.submit');
 Route::post('/form/submit-info', [FormController::class, 'submitInfo'])->name('form.submitInfo');
 
 Route::get('/thankyou', function () {return view('thanks');})->name('thanks');

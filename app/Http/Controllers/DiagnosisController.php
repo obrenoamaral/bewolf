@@ -7,6 +7,7 @@ use App\Models\Answer;
 use App\Models\Client;
 use App\Models\ClientAnswer;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\Request;
 use function Spatie\LaravelPdf\Support\pdf;
 
 
@@ -101,7 +102,7 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
     {
         $client = Client::findOrFail($client_id);
 
-        $fixedEmail = 'suporte@digitalcore.net.br';
+        $fixedEmail = 'contato@bewolf.com.br';
 
         Mail::to($client->email)
             ->cc($fixedEmail)

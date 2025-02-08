@@ -6,7 +6,7 @@ use App\Models\Client;
 use App\Models\ClientAnswer;
 use App\Models\Question;
 use Illuminate\Http\Request;
-use App\Http\Controllers\DiagnosisController; // Correct
+use App\Http\Controllers\DiagnosisController;
 
 class FormController extends Controller
 {
@@ -43,7 +43,7 @@ class FormController extends Controller
             $diagnosisController = new DiagnosisController();
             $diagnosisController->generateReport($client->id);
 
-            return redirect('/thankyou')->with('success', 'Respostas enviadas com sucesso! O relatório foi enviado para seu e-mail.');
+            return view('/thankyou')->with('success', 'Respostas enviadas com sucesso! O relatório foi enviado para seu e-mail.');
         } catch (\Exception $e) {
             return redirect('/form')->with('error', 'Ocorreu um erro ao enviar as respostas.');
         }

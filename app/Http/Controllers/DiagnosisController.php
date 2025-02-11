@@ -6,6 +6,7 @@ use App\Mail\ReportMail;
 use App\Models\Answer;
 use App\Models\Client;
 use App\Models\ClientAnswer;
+use App\Models\EmailContent;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use function Spatie\LaravelPdf\Support\pdf;
@@ -101,12 +102,13 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
     public function sendReportByEmail($client_id, $pdfStorage)
     {
         $client = Client::findOrFail($client_id);
+        $emailContent = EmailContent::first();
 
-        $fixedEmail = 'contato@bewolf.com.br';
+        $fixedEmail = 'breno@digitalcore.net.br';
 
         Mail::to($client->email)
             ->cc($fixedEmail)
-            ->send(new ReportMail($client, $pdfStorage));
+            ->send(new ReportMail($client, $pdfStorage, $emailContent));
 
         if (file_exists($pdfStorage)) {
             unlink($pdfStorage);

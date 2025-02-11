@@ -26,6 +26,11 @@
                         {{ __('Clientes') }}
                     </x-nav-link>
                 </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex text-gray-100">
+                    <x-nav-link :href="route('email.edit')" :active="request()->routeIs('email.edit')" class="!text-gray-100">
+                        {{ __('Email') }}
+                    </x-nav-link>
+                </div>
             </div>
 
             <!-- Settings Dropdown -->

@@ -4,24 +4,109 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório de Diagnóstico Empresarial</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos globais */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Container principal */
+        .container {
+            width: 100%;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Cartão central */
+        .content {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 650px;
+            width: 100%;
+            margin-top: 40px;
+        }
+
+        /* Logo */
+        .logo {
+            width: 200px;
+            margin: 0 auto 30px;
+            display: block;
+        }
+
+        /* Títulos e parágrafos */
+        .text-lg {
+            font-size: 1.25rem;
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .text-base {
+            font-size: 1rem;
+            color: #4a5568;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        /* Botão */
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #3b82f6;
+            color: #fff;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #2563eb;
+        }
+
+        /* Rodapé */
+        .footer {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #718096;
+            margin-top: 40px;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans">
-<div class="container mx-auto px-4 py-8">
-    <div class="bg-white rounded-lg shadow-md p-8">
-        <img src="{{ public_path('logo-preto.png') }}" alt="Logotipo" class="w-48 mx-auto mb-6">
+<body>
+<div class="container">
+    <div class="content">
+        <!-- Logo incorporada em base64 -->
+        <img src="data:image/png;base64,{{base64_encode(file_get_contents(public_path('logo-preto.png')))}}" alt="Logotipo" class="logo">
 
-        <p class="text-lg text-gray-800 mb-4">Olá,</p>
+        <p>{{ $emailContent->greeting }}</p>
 
-        <p class="text-base text-gray-700 mb-6">
-            Estamos enviando o seu Relatório de Diagnóstico Empresarial, repleto de informações valiosas para ajudar a identificar pontos de melhoria e otimizar o desempenho da sua empresa.
+        <p>
+            {{ $emailContent->intro_text }}
         </p>
 
-        <p class="text-base text-gray-700 mb-6">
-            Aproveite os insights para tomar decisões estratégicas e, caso precise de qualquer suporte, nossa equipe está à disposição para ajudá-lo a alcançar ainda mais sucesso.
+        <p>
+            {{ $emailContent->closing_text }}
         </p>
 
-        <p class="text-base text-gray-700">
+        <!-- Botão de Ação -->
+        <a href="https://www.example.com" class="btn">Ver Relatório Completo</a>
+
+        <p class="text-base footer">
             Atenciosamente,<br>
             <span class="font-bold">Equipe BeWolf</span>
         </p>

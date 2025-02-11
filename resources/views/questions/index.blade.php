@@ -116,8 +116,8 @@
             answerDiv.innerHTML = `
         <input type="text" value="${answer ? answer.answer : ''}" class="w-full p-2 bg-transparent rounded-md text-gray-100 mb-1 answer-input" required>
         <div class="flex gap-2 text-sm text-gray-300">
-            <input type="text" value="${answer ? answer.diagnosis : ''}" class="flex-1 p-2 bg-transparent rounded-md diagnosis-input" placeholder="Diagnóstico">
-            <input type="text" value="${answer ? answer.solution : ''}" class="flex-1 p-2 bg-transparent rounded-md solution-input" placeholder="Solução">
+            <textarea class="flex-1 p-2 bg-transparent rounded-md diagnosis-input" placeholder="Diagnóstico">${answer ? answer.diagnosis : ''}</textarea>
+            <textarea class="flex-1 p-2 bg-transparent rounded-md solution-input" placeholder="Solução">${answer ? answer.solution : ''}</textarea>
             <input type="number" value="${answer ? answer.weight : ''}" class="w-16 p-2 bg-transparent rounded-md weight-input" placeholder="Peso" required>
             <input type="text" value="${answer ? answer.strength_weakness_title : ''}" class="flex-1 p-2 bg-transparent rounded-md strength-input" placeholder="Ponto Forte ou Fraco">
         </div>

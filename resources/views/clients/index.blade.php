@@ -2,6 +2,7 @@
     <div class="pt-10">
         <div class="flex justify-between my-4 container mx-auto max-w-5xl">
             <h1 class="text-2xl text-gray-100">Clientes</h1>
+            <a href="{{ route('clients.export') }}" class="btn btn-primary border border-gray-300 hover:bg-dark-secondary text-gray-100 p-2 rounded">Exportar para Excel</a>
         </div>
         <table class="container max-w-5xl mx-auto overflow-hidden">
             <thead>

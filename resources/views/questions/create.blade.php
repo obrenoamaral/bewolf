@@ -32,16 +32,16 @@
                     <input name="answers[0][weight]" type="number" required placeholder="Peso" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
 
                     <label class="block text-gray-100 font-medium mt-2">Diagnóstico:</label>
-                    <input name="answers[0][diagnosis]" type="text" required placeholder="Diagnóstico" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+                    <textarea name="answers[0][diagnosis]" required placeholder="Diagnóstico" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 resize-y"></textarea>
 
                     <label class="block text-gray-100 font-medium mt-2">Solução:</label>
-                    <input name="answers[0][solution]" type="text" required placeholder="Solução" class="w-full p-2 bg-transparent rounded-lg mt-1 text-gray-100"/>
+                    <textarea name="answers[0][solution]" required placeholder="Solução" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 resize-y"></textarea>
 
                     <label class="block text-gray-100 font-medium mt-2">Título do Ponto Forte/Fraco:</label>
                     <input name="answers[0][strength_weakness_title]" type="text" placeholder="Título" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
 
                     <label class="block text-gray-100 font-medium mt-2">Classificação:</label>
-                    <select name="answers[0][strength_weakness]" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100">
+                    <select name="answers[0][strength_weakness]" class="w-full p-2 rounded-lg mt-1 bg-dark text-gray-100">
                         <option value="">Selecione</option>
                         <option value="strong">Ponto Forte</option>
                         <option value="weak">Ponto Fraco</option>
@@ -55,7 +55,7 @@
             </button>
 
             <!-- Botão de Envio -->
-            <button type="submit" class="w-full mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold p-2 rounded-lg">
+            <button type="submit" class="w-full mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold p-2 rounded-lg mb-6">
                 Cadastrar Pergunta
             </button>
         </form>
@@ -73,31 +73,31 @@
                 const answerGroup = document.createElement("div");
                 answerGroup.classList.add("answer-group", "mt-4", "p-4", "border", "border-gray-600", "rounded-lg");
                 answerGroup.innerHTML = `
-                <label class="block text-gray-100 font-medium">Resposta ${answerIndex + 1}:</label>
-                <input name="answers[${answerIndex}][answer]" type="text" required placeholder="Resposta" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+            <label class="block text-gray-100 font-medium">Resposta ${answerIndex + 1}:</label>
+            <input name="answers[${answerIndex}][answer]" type="text" required placeholder="Resposta" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
 
-                <label class="block text-gray-100 font-medium mt-2">Peso:</label>
-                <input name="answers[${answerIndex}][weight]" type="number" required placeholder="Peso" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+            <label class="block text-gray-100 font-medium mt-2">Peso:</label>
+            <input name="answers[${answerIndex}][weight]" type="number" required placeholder="Peso" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
 
-                <label class="block text-gray-100 font-medium mt-2">Diagnóstico:</label>
-                <input name="answers[${answerIndex}][diagnosis]" type="text" required placeholder="Diagnóstico" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+            <label class="block text-gray-100 font-medium mt-2">Diagnóstico:</label>
+            <textarea name="answers[${answerIndex}][diagnosis]" required placeholder="Diagnóstico" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 resize-y"></textarea>
 
-                <label class="block text-gray-100 font-medium mt-2">Solução:</label>
-                <input name="answers[${answerIndex}][solution]" type="text" required placeholder="Solução" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+            <label class="block text-gray-100 font-medium mt-2">Solução:</label>
+            <textarea name="answers[${answerIndex}][solution]" required placeholder="Solução" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 resize-y"></textarea>
 
-                <label class="block text-gray-100 font-medium mt-2">Título do Ponto Forte/Fraco:</label>
-                <input name="answers[${answerIndex}][strength_weakness_title]" type="text" placeholder="Título" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+            <label class="block text-gray-100 font-medium mt-2">Título do Ponto Forte/Fraco:</label>
+            <input name="answers[${answerIndex}][strength_weakness_title]" type="text" placeholder="Título" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
 
-                <label class="block text-gray-100 font-medium mt-2">Classificação:</label>
-                <select name="answers[${answerIndex}][strength_weakness]" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100">
-                    <option value="">Selecione</option>
-                    <option value="strong">Ponto Forte</option>
-                    <option value="weak">Ponto Fraco</option>
-                </select>
+            <label class="block text-gray-100 font-medium mt-2">Classificação:</label>
+            <select name="answers[${answerIndex}][strength_weakness]" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100">
+                <option value="">Selecione</option>
+                <option value="strong">Ponto Forte</option>
+                <option value="weak">Ponto Fraco</option>
+            </select>
 
-                <button type="button" class="remove-answer mt-2 text-red-500 hover:text-red-700 text-sm">
-                    Remover Resposta
-                </button>`;
+            <button type="button" class="remove-answer mt-2 text-red-500 hover:text-red-700 text-sm">
+                Remover Resposta
+            </button>`;
 
                 container.appendChild(answerGroup);
                 answerIndex++;
@@ -111,5 +111,6 @@
             });
         });
     </script>
+
 
 </x-app-layout>

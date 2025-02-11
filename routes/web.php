@@ -8,7 +8,9 @@ use App\Http\Controllers\FormController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\EmailContentController;
+use App\Http\Controllers\QuestionMultipleChoiceController;
 use Illuminate\Support\Facades\Route;
+use Maatwebsite\Excel\Facades\Excel;
 
 // Rotas públicas (não requerem autenticação)
 Route::get('/', [FormController::class, 'showForm'])->name('form.show');
@@ -61,6 +63,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [EmailContentController::class, 'index'])->name('email.index');
         Route::get('/edit', [EmailContentController::class, 'edit'])->name('email.edit');
         Route::post('/update', [EmailContentController::class, 'update'])->name('email.update');
+    });
+
+// Multiple Choices
+    Route::prefix('multiple-choices')->group(function () {
+        Route::get('/', [QuestionMultipleChoiceController::class, 'index'])->name('multiple-choices.index');
+        Route::get('/create', [QuestionMultipleChoiceController::class, 'create'])->name('multiple-choices.create'); // Rota de criação
+        Route::post('/', [QuestionMultipleChoiceController::class, 'store'])->name('multiple-choices.store'); // Rota para salvar a pergunta
+        Route::put('/{id}', [QuestionMultipleChoiceController::class, 'update'])->name('multiple-choices.update'); // Rota para atualizar a pergunta
+        Route::delete('/{id}', [QuestionMultipleChoiceController::class, 'destroy'])->name('multiple-choices.destroy'); // Rota para excluir a pergunta
     });
 
 });

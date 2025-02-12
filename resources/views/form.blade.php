@@ -45,7 +45,7 @@
         const nextButton = document.getElementById('nextButton');
         const submitButton = document.getElementById('submitButton');
         const questionContainer = document.getElementById('questionContainer');
-        const questions = @json($questions);  // Supondo que as perguntas sejam passadas como JSON para o JavaScript
+        const questions = @json($questions);
         let currentQuestionIndex = 0;
 
         // Função para mostrar a pergunta atual
@@ -131,8 +131,6 @@
 
         // Adiciona o evento para enviar a resposta quando o botão "Enviar Respostas" for clicado
         document.getElementById('questionForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            // A última pergunta está sendo exibida, então podemos enviar as respostas aqui
             console.log('Formulário enviado');
         });
     });

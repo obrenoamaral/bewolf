@@ -22,6 +22,11 @@
                     </x-nav-link>
                 </div>
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex text-gray-100">
+                    <x-nav-link :href="route('multiple-choices.index')" :active="request()->routeIs('multiple-choices.index')" class="!text-gray-100">
+                        {{ __('Multipla Escolha') }}
+                    </x-nav-link>
+                </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex text-gray-100">
                     <x-nav-link :href="route('clients.index')" :active="request()->routeIs('clients.index')" class="!text-gray-100">
                         {{ __('Clientes') }}
                     </x-nav-link>

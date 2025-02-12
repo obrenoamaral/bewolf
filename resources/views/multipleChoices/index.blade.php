@@ -14,6 +14,7 @@
                 <thead>
                 <tr class="text-gray-100">
                     <th class="p-2 text-left text-gray-100">Pergunta</th>
+                    <th class="p-2 text-left">Título da Solução</th>
                     <th class="p-2 text-left">Respostas</th>
                     <th class="p-2 text-center w-40">Ações</th>
                 </tr>
@@ -22,23 +23,28 @@
                 @foreach ($questionsMultipleChoice as $question)
                     <tr class="border-b border-b-gray-600 hover:bg-[#262626]">
                         <td class="border-b border-b-gray-600 p-2 font-medium rounded-bl-lg text-gray-100">{{ $question->question_title }}</td>
+                        <td class="border-b border-b-gray-600 p-2 text-gray-100">{{ $question->solution_title }}</td>
                         <td class="border-b border-b-gray-600 p-2">
                             <ul>
                                 @foreach ($question->answersMultipleChoice as $answer)
                                     <li class="text-sm text-gray-100 flex justify-between">
-                                        <span>
-                                            <strong>{{ $answer->answer }}</strong> (Peso: {{ $answer->weight }})
-                                            <br><span class="text-xs text-gray-200">{{ $answer->diagnosis }}</span>
-                                        </span>
+                                            <span>
+                                                <strong>{{ $answer->answer }}</strong> (Peso: {{ $answer->weight }})
+                                                <br><span class="text-xs text-gray-200">{{ $answer->diagnosis }}</span>
+                                            </span>
                                     </li>
                                 @endforeach
                             </ul>
                         </td>
                         <td class="p-2 text-center flex gap-2 w-40">
-                            <button data-question="{{ json_encode($question) }}" class="edit-button border border-blue-400 text-white px-6 py-1 rounded-lg cursor-pointer">
+                            <button
+                                data-question="{{ json_encode($question) }}"
+                                data-answers="{{ json_encode($question->answersMultipleChoice) }}"
+                                class="edit-button border border-blue-400 text-white px-6 py-1 rounded-lg cursor-pointer"
+                            >
                                 <i class="pi pi-file-edit" style="color: #51A2FF"></i>
                             </button>
-                            <form action="{{ route('questions.destroy', $question->id) }}" method="POST" class="inline">
+                            <form action="{{ route('multiple-choices.destroy', $question->id) }}" method="POST" class="inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="border border-red-400 text-white px-6 py-1 rounded-lg cursor-pointer">
@@ -63,6 +69,9 @@
                 <label class="block mb-2 text-gray-300">Pergunta:</label>
                 <input type="text" id="questionText" name="question_title" class="w-full p-2 bg-transparent rounded-md text-gray-100" required>
 
+                <label class="block mb-2 text-gray-300">Título da Solução:</label>
+                <input type="text" id="solutionTitleText" name="solution_title" class="w-full p-2 bg-transparent rounded-md text-gray-100">
+
                 <div class="mt-4">
                     <h3 class="text-lg font-semibold mb-2">Respostas</h3>
                     <div id="answersContainer">
@@ -79,120 +88,111 @@
     </div>
 
     <script>
-        const editButtons = document.querySelectorAll('.edit-button');
-        const editModal = document.getElementById('editModal');
-        const questionText = document.getElementById('questionText');
-        const answersContainer = document.getElementById('answersContainer');
-        const addAnswerButton = document.getElementById('addAnswerButton');
-        const cancelEditButton = document.getElementById('cancelEditButton');
-        const editForm = document.getElementById('editForm');
-        const questionId = document.getElementById('questionId');
+        document.addEventListener("DOMContentLoaded", function () {
+            const editButtons = document.querySelectorAll(".edit-button");
+            const editModal = document.getElementById("editModal");
+            const questionText = document.getElementById("questionText");
+            const solutionTitleText = document.getElementById("solutionTitleText"); // Novo input
+            const answersContainer = document.getElementById("answersContainer");
+            const addAnswerButton = document.getElementById("addAnswerButton");
+            const cancelEditButton = document.getElementById("cancelEditButton");
+            const editForm = document.getElementById("editForm");
+            const questionId = document.getElementById("questionId");
 
-        editButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const question = JSON.parse(button.dataset.question);
-                questionId.value = question.id;
-                questionText.value = question.question_title;
-                answersContainer.innerHTML = '';
+            editButtons.forEach((button) => {
+                button.addEventListener("click", () => {
+                    const question = JSON.parse(button.dataset.question);
+                    const answers = JSON.parse(button.dataset.answers);
 
-                question.answersMultipleChoice.forEach(answer => {
-                    addAnswer(answer);
-                });
+                    questionId.value = question.id;
+                    questionText.value = question.question_title;
+                    solutionTitleText.value = question.solution_title; // Preenche o input
+                    answersContainer.innerHTML = "";
 
-                editModal.classList.remove('hidden');
-            });
-        });
-
-        cancelEditButton.addEventListener('click', () => {
-            editModal.classList.add('hidden');
-        });
-
-        addAnswerButton.addEventListener('click', () => {
-            addAnswer();
-        });
-
-        function addAnswer(answer = null) {
-            const answerDiv = document.createElement('div');
-            answerDiv.innerHTML = `
-                <input type="text" value="${answer ? answer.answer : ''}" class="w-full p-2 bg-transparent rounded-md text-gray-100 mb-1 answer-input" required>
-                <div class="flex gap-2 text-sm text-gray-300">
-                    <textarea class="flex-1 p-2 bg-transparent rounded-md diagnosis-input" placeholder="Diagnóstico">${answer ? answer.diagnosis : ''}</textarea>
-                    <input type="number" value="${answer ? answer.weight : ''}" class="w-16 p-2 bg-transparent rounded-md weight-input" placeholder="Peso" required>
-                </div>
-                <button type="button" class="mt-2 text-red-400 hover:text-red-500 remove-answer">Remover</button>
-            `;
-            answersContainer.appendChild(answerDiv);
-
-            const removeButton = answerDiv.querySelector('.remove-answer');
-            removeButton.addEventListener('click', () => {
-                answersContainer.removeChild(answerDiv);
-            });
-        }
-
-        editForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-
-            const answerDivs = document.querySelectorAll('#answersContainer > div');
-            let isValid = true;
-
-            answerDivs.forEach((answerDiv, index) => {
-                const answerInput = answerDiv.querySelector('.answer-input');
-                const weightInput = answerDiv.querySelector('.weight-input');
-
-                if (!answerInput.value || !weightInput.value) {
-                    alert("Resposta e Peso são obrigatórios para a resposta " + (index + 1));
-                    isValid = false;
-                }
-            });
-
-            if (!isValid) {
-                return;
-            }
-
-            const formData = new FormData(editForm);
-            formData.append('question_title', questionText.value);
-
-            answerDivs.forEach((answerDiv, index) => {
-                const answerInput = answerDiv.querySelector('.answer-input');
-                const diagnosisInput = answerDiv.querySelector('.diagnosis-input');
-                const weightInput = answerDiv.querySelector('.weight-input');
-
-                formData.append(`answers[${index}][answer]`, answerInput.value);
-                formData.append(`answers[${index}][diagnosis]`, diagnosisInput ? diagnosisInput.value : '');
-                formData.append(`answers[${index}][weight]`, weightInput.value);
-            });
-
-            fetch('/questions/' + questionId.value, {
-                method: 'POST', // Ou 'PUT', dependendo da sua rota
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                },
-                body: formData
-            })
-                .then(response => {
-                    if (response.ok) {
-                        editModal.classList.add('hidden');
-                        location.reload();
-                    } else {
-                        response.json().then(data => {
-                            console.error('Erro ao salvar:', data);
-                            if (data.errors) {
-                                let errorMessages = "";
-                                for (const key in data.errors) {
-                                    data.errors[key].forEach(error => {
-                                        errorMessages += error + "\n";
-                                    });
-                                }
-                                alert(errorMessages);
-                            } else if (data.message) {
-                                alert(data.message);
-                            } else {
-                                alert("Ocorreu um erro ao salvar. Verifique o console para mais detalhes.");
-                            }
+                    if (answers) {
+                        answers.forEach((answer) => {
+                            addAnswer(answer);
                         });
                     }
+
+                    editModal.classList.remove("hidden");
+                });
+            });
+
+            cancelEditButton.addEventListener("click", () => {
+                editModal.classList.add("hidden");
+            });
+
+            addAnswerButton.addEventListener("click", () => {
+                addAnswer();
+            });
+
+            function addAnswer(answer = null) {
+                const answerDiv = document.createElement("div");
+                answerDiv.classList.add("mb-2");
+
+                answerDiv.innerHTML = `
+            <input type="text" value="${answer ? answer.answer : ""}" class="w-full p-2 bg-transparent rounded-md text-gray-100 mb-1 answer-input" required>
+            <div class="flex gap-2 text-sm text-gray-300">
+                <textarea class="flex-1 p-2 bg-transparent rounded-md diagnosis-input" placeholder="Diagnóstico">${answer ? answer.diagnosis : ""}</textarea>
+                <input type="number" value="${answer ? answer.weight : ""}" class="w-16 p-2 bg-transparent rounded-md weight-input" placeholder="Peso" required>
+            </div>
+            <button type="button" class="mt-2 text-red-400 hover:text-red-500 remove-answer">Remover</button>
+        `;
+
+                answersContainer.appendChild(answerDiv);
+
+                const removeButton = answerDiv.querySelector(".remove-answer");
+                removeButton.addEventListener("click", () => {
+                    answersContainer.removeChild(answerDiv);
+                });
+            }
+
+            editForm.addEventListener("submit", (event) => {
+                event.preventDefault();
+
+                const payload = {
+                    question_title: questionText.value,
+                    solution_title: solutionTitleText.value, // Inclui o novo campo
+                    answers: [],
+                };
+
+                const answerDivs = document.querySelectorAll("#answersContainer > div");
+                answerDivs.forEach((answerDiv) => {
+                    const answerInput = answerDiv.querySelector(".answer-input");
+                    const diagnosisInput = answerDiv.querySelector(".diagnosis-input");
+                    const weightInput = answerDiv.querySelector(".weight-input");
+
+                    payload.answers.push({
+                        answer: answerInput.value,
+                        diagnosis: diagnosisInput.value,
+                        weight: parseInt(weightInput.value, 10) || 0,
+                    });
+                });
+
+                fetch(`/multiple-choices/${questionId.value}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify(payload),
                 })
-                .catch(error => console.error('Erro ao salvar:', error));
+                    .then((response) => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            return response.json().then((data) => {
+                                alert("Erro ao salvar: " + (data.message || "Erro desconhecido"));
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Erro ao salvar:", error);
+                        alert("Erro ao salvar: " + error.message);
+                    });
+            });
         });
     </script>
+
 </x-app-layout>

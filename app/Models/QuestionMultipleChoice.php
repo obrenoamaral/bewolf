@@ -10,11 +10,12 @@ class QuestionMultipleChoice extends Model
     use HasFactory;
 
     protected $fillable = [
-        'question_title'
+        'question_title',
+        'solution_title',
     ];
 
-    public function answers() // Nome corrigido para seguir a convenção
+    public function answersMultipleChoice()
     {
-        return $this->hasMany(AnswersMultipleChoice::class);
+        return $this->hasMany(AnswersMultipleChoice::class, 'question_multiple_choice_id', 'id');
     }
 }

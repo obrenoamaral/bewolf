@@ -1,4 +1,3 @@
-<!-- resources/views/multiple-choices/create.blade.php -->
 <x-app-layout>
     <div class="max-w-5xl mx-auto rounded-xl pt-10">
         <a href="{{ route('multiple-choices.index') }}" class="border border-gray-400 text-gray-400 px-4 py-2 rounded-lg cursor-pointer">
@@ -20,9 +19,12 @@
 
         <form method="POST" action="{{ route('multiple-choices.store') }}">
             @csrf
-            <!-- Campo da Pergunta -->
+
             <label class="block text-gray-100 font-medium">Pergunta:</label>
             <input name="question_title" type="text" required class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+
+            <label class="block text-gray-100 font-medium mt-2">Título da Solução:</label>
+            <input name="solution_title" type="text" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
 
             <div id="answers-container">
                 <div class="answer-group mt-4 p-4 border border-gray-600 rounded-lg">
@@ -37,12 +39,10 @@
                 </div>
             </div>
 
-            <!-- Botão para Adicionar Nova Resposta -->
             <button type="button" id="add-answer" class="mt-3 text-blue-500 hover:text-blue-700 text-sm">
                 + Adicionar Outra Resposta
             </button>
 
-            <!-- Botão de Envio -->
             <button type="submit" class="w-full mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold p-2 rounded-lg mb-6">
                 Cadastrar Pergunta
             </button>
@@ -56,7 +56,6 @@
             const container = document.getElementById("answers-container");
             const addAnswerBtn = document.getElementById("add-answer");
 
-            // Adicionar nova resposta
             addAnswerBtn.addEventListener("click", function() {
                 const answerGroup = document.createElement("div");
                 answerGroup.classList.add("answer-group", "mt-4", "p-4", "border", "border-gray-600", "rounded-lg");
@@ -78,7 +77,6 @@
                 answerIndex++;
             });
 
-            // Remover resposta (Event Delegation)
             container.addEventListener("click", function(event) {
                 if (event.target.classList.contains("remove-answer")) {
                     event.target.closest(".answer-group").remove();

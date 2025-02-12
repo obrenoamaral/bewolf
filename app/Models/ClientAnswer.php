@@ -11,9 +11,9 @@ class ClientAnswer extends Model
 
     protected $fillable = ['client_id', 'question_id', 'answer_id'];
 
-    public function answer()
+    public function client()
     {
-        return $this->belongsTo(Answer::class);
+        return $this->belongsTo(Client::class);
     }
 
     public function question()
@@ -21,8 +21,16 @@ class ClientAnswer extends Model
         return $this->belongsTo(Question::class);
     }
 
-    public function client()
+    public function answer()
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(Answer::class);
+    }
+
+    public function questionMultipleChoice() { // Nome do relacionamento (singular)
+        return $this->belongsTo(QuestionMultipleChoice::class, 'question_multiple_choices_id'); // Nome da coluna corrigido
+    }
+
+    public function answerMultipleChoice() { // Nome do relacionamento (singular)
+        return $this->belongsTo(AnswersMultipleChoice::class, 'multiple_choice_answer_id'); // Nome da coluna corrigido
     }
 }

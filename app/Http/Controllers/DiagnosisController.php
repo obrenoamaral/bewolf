@@ -79,24 +79,36 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
             return $data;
         });
 
+
+        $multipleChoiceAnswers = ClientAnswer::where('client_id', $client_id)
+            ->whereHas('questionMultipleChoice') // Deve usar o nome do relacionamento (corrigido no model)
+            ->with(['questionMultipleChoice', 'answerMultipleChoice']) // Deve usar o nome do relacionamento (corrigido no model)
+            ->get();
+
+        dd($multipleChoiceAnswers);
+
+
         $totalWeight = $clientAnswers->sum(fn($clientAnswer) => $clientAnswer->answer->weight);
         $diagnosisResult = $this->calculateDiagnosis($totalWeight);
 
         $fileName = 'diagnostico_' . $client_id . '.pdf';
         $pdfStorage = storage_path('app/public/' . $client_id . '.pdf');
 
-         pdf()
-            ->view('reports.index', compact('reportData', 'totalWeight', 'diagnosisResult', 'strongPoints', 'weakPoints'))
-            ->save($pdfStorage);
-
         try {
+            pdf()
+                ->view('reports.index', compact('reportData', 'totalWeight', 'diagnosisResult', 'strongPoints', 'weakPoints', 'multipleChoiceAnswers'))
+                ->save($pdfStorage);
+
             $this->sendReportByEmail($client_id, $pdfStorage);
+
         } catch (\Exception $e) {
-            \Log::error('Erro ao enviar relatório: ' . $e->getMessage());
+            Log::error('Erro ao gerar ou enviar relatório: ' . $e->getMessage()); // Log do erro
+            // Pode retornar uma resposta de erro ou redirecionar com uma mensagem
+            return back()->with('error', 'Erro ao gerar o relatório. Tente novamente mais tarde.');
         }
-//
-////        return response()->json(['message' => 'Relatório gerado com sucesso'], 200);
-//        return view('reports.index', compact('reportData', 'totalWeight', 'diagnosisResult', 'strongPoints', 'weakPoints'));
+
+        return back()->with('success', 'Relatório gerado e enviado com sucesso!'); // Mensagem de sucesso
+
     }
 
     public function sendReportByEmail($client_id, $pdfStorage)

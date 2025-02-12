@@ -17,8 +17,12 @@ class AnswersMultipleChoice extends Model
     ];
 
     // Relacionamento com a pergunta
-    public function question() // Nome corrigido para seguir a convenção
-    {
+    public function questionMultipleChoice() { // Nome do relacionamento (singular)
         return $this->belongsTo(QuestionMultipleChoice::class);
+    }
+
+    public function clientAnswers()
+    {
+        return $this->hasMany(ClientAnswer::class);
     }
 }

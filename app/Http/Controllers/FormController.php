@@ -14,27 +14,30 @@ class FormController extends Controller
 {
     public function showForm()
     {
-        $questions = Question::with('answers')->get();
-        $multipleChoiceQuestions = QuestionMultipleChoice::with('answersMultipleChoice')->get();
+        $questions = \App\Models\Question::with('answers')->get();
+        $multipleChoiceQuestions = \App\Models\QuestionMultipleChoice::with('answersMultipleChoice')->get();
 
-//        dd($multipleChoiceQuestions);
         return view('form', compact('questions', 'multipleChoiceQuestions'));
     }
 
     public function submitInfo(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'company' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'answers' => 'required|array',
+            'answers.*' => 'required|exists:answers,id',
+            'multiple_choice_answers' => 'nullable|array',
+            'multiple_choice_answers.*' => 'nullable|array',
+            'multiple_choice_answers.*.*' => 'nullable|exists:answers_multiple_choices,id',
+        ]);
+
         try {
             DB::beginTransaction();
 
-            // Respostas simples
-            $answers = $request->input('answers', []);
-
-            // Respostas de múltipla escolha
-            $multipleChoiceAnswers = $request->input('multiple_choice_answers', []);
-
-            // Recuperar ou criar o cliente
             $client = Client::where('email', $request->input('email'))->first();
-
             if (!$client) {
                 $client = Client::create([
                     'name' => $request->input('name'),
@@ -44,37 +47,47 @@ class FormController extends Controller
                 ]);
             }
 
-            // Salvar respostas simples
+            $answers = $request->input('answers', []);
             foreach ($answers as $questionId => $answerId) {
-                ClientAnswer::updateOrCreate(
-                    ['client_id' => $client->id, 'question_id' => $questionId],
-                    ['answer_id' => $answerId]
-                );
+                if ($answerId !== null) {
+                    ClientAnswer::create([
+                        'client_id' => $client->id,
+                        'question_id' => $questionId,
+                        'answer_id' => $answerId,
+                        'multiple_choice_answer_id' => null, // Garante que este campo seja nulo para respostas simples
+                    ]);
+                }
             }
 
-            // Salvar respostas de múltipla escolha
-            foreach ($multipleChoiceAnswers as $questionId => $answerIds) {
-                foreach ($answerIds as $answerId) {
-                    ClientAnswer::updateOrCreate(
-                        ['client_id' => $client->id, 'question_id' => $questionId, 'multiple_choice_answer_id' => $answerId],
-                        ['answer_id' => null] // Valor padrão, se necessário
-                    );
+            $multipleChoiceAnswers = $request->input('multiple_choice_answers', []);
+            foreach ($multipleChoiceAnswers as $questionMultipleChoiceId => $answerIds) {
+                if (is_array($answerIds)) {
+                    foreach ($answerIds as $answerMultipleChoiceId) {
+                        ClientAnswer::create([
+                            'client_id' => $client->id,
+                            'question_id' => $questionMultipleChoiceId,
+                            'answer_id' => null, // Garante que este campo seja nulo para respostas múltiplas
+                            'multiple_choice_answer_id' => $answerMultipleChoiceId,
+                        ]);
+                    }
                 }
             }
 
             DB::commit();
 
-            // Geração do relatório
             $diagnosisController = new DiagnosisController();
             $diagnosisController->generateReport($client->id);
 
             return redirect('/thankyou')->with('success', 'Respostas enviadas com sucesso! O relatório foi enviado para seu e-mail.');
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            \Log::error('Erro no banco de dados ao enviar respostas: ' . $e->getMessage());
+            return back()->with('error', 'Ocorreu um erro ao salvar as respostas. Tente novamente mais tarde.');
         } catch (\Exception $e) {
             DB::rollBack();
-
             \Log::error('Erro ao enviar respostas: ' . $e->getMessage());
-
-            return redirect('/form')->with('error', 'Ocorreu um erro ao enviar as respostas. Tente novamente mais tarde.');
+            return back()->with('error', 'Ocorreu um erro ao enviar as respostas. Tente novamente mais tarde.');
         }
     }
 

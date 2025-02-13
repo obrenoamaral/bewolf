@@ -19,44 +19,28 @@
     </div>
 </div>
 
-<div class="bg-black opacity-70 h-screen flex items-center justify-center hidden" id="questionScreen">
+<div class="bg-black opacity-70 h-screen flex items-center justify-center hidden transition-opacity" id="questionScreen">
     <div class="max-w-4xl w-full p-8">
-        <form action="{{ route('form.submit') }}" method="POST">
+        <form action="{{ route('form.submit') }}" method="POST" id="questionForm">
             @csrf
+            <!-- Questões Simples -->
+            <div id="questionContainer"></div>
 
-            <h2>Questões Simples</h2>
-            @foreach ($questions as $question)
-                <div class="mb-4">
-                    <label for="question-{{ $question->id }}" class="block font-medium text-gray-100">{{ $question->question }}</label>
-                    @foreach ($question->answers as $answer)
-                        <div class="flex items-center">
-                            <input type="radio" name="answers[{{ $question->id }}]" id="answer-{{ $answer->id }}" value="{{ $answer->id }}" class="mr-2" required> {{-- Adicionado 'required' --}}
-                            <label for="answer-{{ $answer->id }}" class="text-gray-100">{{ $answer->answer }}</label>
-                        </div>
-                    @endforeach
-                </div>
-            @endforeach
+            <!-- Questões de Múltipla Escolha -->
+            <div id="multipleChoiceContainer" class="hidden"></div>
 
-            <h2>Questões de Múltipla Escolha</h2>
-            @foreach ($multipleChoiceQuestions as $question)
-                <div class="mb-4">
-                    <label for="question-{{ $question->id }}" class="text-gray-100">{{ $question->question_title }}</label>
-                    @foreach ($question->answersMultipleChoices as $answer) {{-- Nome do relacionamento corrigido --}}
-                    <div class="flex items-center">
-                        <input type="checkbox" name="multiple_choice_answers[{{ $question->id }}][]" value="{{ $answer->id }}">
-                        <label for="answer-{{ $answer->id }}" class="text-gray-100">{{ $answer->answer }}</label>
-                    </div>
-                    @endforeach
-                </div>
-            @endforeach
-
-            <button type="submit" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded">Enviar</button>
+            <div class="mt-6 flex justify-between">
+                <button type="button" id="backButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded disabled:opacity-50" disabled>Voltar</button>
+                <button type="button" id="nextButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded">Próximo</button>
+                <button type="submit" id="submitButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded hidden">Enviar</button>
+            </div>
         </form>
     </div>
 </div>
 
 </body>
 </html>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -68,67 +52,109 @@
         const submitButton = document.getElementById('submitButton');
         const questionContainer = document.getElementById('questionContainer');
         const multipleChoiceContainer = document.getElementById('multipleChoiceContainer');
+
         const questions = @json($questions);
         const multipleChoiceQuestions = @json($multipleChoiceQuestions);
+
         let currentQuestionIndex = 0;
         let currentMultipleChoiceIndex = 0;
 
+        // Função para exibir a pergunta simples
         function showQuestion(index) {
-            // ... (sem alterações)
+            const question = questions[index];
+            questionContainer.innerHTML = `
+            <div class="mb-4 opacity-0 transition-opacity duration-500">
+                <label for="question-${question.id}" class="block font-medium text-gray-100">${question.question}</label>
+                ${question.answers.map(answer => `
+                    <div class="flex items-center">
+                        <input type="radio" name="answers[${question.id}]" id="answer-${answer.id}" value="${answer.id}" class="mr-2" required>
+                        <label for="answer-${answer.id}" class="text-gray-100">${answer.answer}</label>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+            const questionElement = questionContainer.querySelector('div');
+            setTimeout(() => questionElement.classList.add('opacity-100'), 10);
         }
 
         function showMultipleChoiceQuestion(index) {
-            if (index < multipleChoiceQuestions.length) {
-                const question = multipleChoiceQuestions[index];
-                multipleChoiceContainer.innerHTML = `
-                <div class="mb-6">
-                    <p class="font-semibold mb-2 text-gray-100">${question.question_title}</p>
-                    ${question.answers_multiple_choice.map(answer => `
-                        <label class="block mb-2 text-gray-100">
-                            <input type="radio" name="multiple_choice_answers[${question.id}]" value="${answer.id}" required class="form-radio h-4 w-4 text-black border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-200">
-                            ${answer.answer}
-                        </label>
-                    `).join('')}
-                </div>
-            `;
+            const question = multipleChoiceQuestions[index];
 
-                if (index === multipleChoiceQuestions.length - 1) {
-                    nextButton.classList.add('hidden');
-                    submitButton.classList.remove('hidden');
-                } else {
-                    nextButton.classList.remove('hidden');
-                    submitButton.classList.add('hidden');
-                }
+            if (!question.answers_multiple_choice || !Array.isArray(question.answers_multiple_choice)) {
+                console.error('Respostas de múltipla escolha não definidas ou inválidas:', question);
+                return;
+            }
+
+            multipleChoiceContainer.innerHTML = `
+        <div class="mb-6 opacity-0 transition-opacity duration-500">
+            <p class="font-semibold mb-2 text-gray-100">${question.question_title}</p>
+            ${question.answers_multiple_choice.map(answer => `
+                <label class="block mb-2 text-gray-100">
+                    <input type="checkbox" name="multiple_choice_answers[${question.id}][]" value="${answer.id}" class="form-checkbox h-4 w-4 text-black border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-200">
+                    ${answer.answer}
+                </label>
+            `).join('')}
+        </div>
+    `;
+
+            const multipleChoiceElement = multipleChoiceContainer.querySelector('div');
+            setTimeout(() => multipleChoiceElement.classList.add('opacity-100'), 10);
+
+            if (index === multipleChoiceQuestions.length - 1) {
+                nextButton.classList.add('hidden');
+                submitButton.classList.remove('hidden');
+            } else {
+                nextButton.classList.remove('hidden');
+                submitButton.classList.add('hidden');
             }
         }
 
 
+
+        // Função para passar para a próxima pergunta
         function showNextQuestion() {
             if (currentQuestionIndex < questions.length - 1) {
                 currentQuestionIndex++;
-                showQuestion(currentQuestionIndex);
+                questionContainer.classList.add('opacity-0');
+                setTimeout(() => {
+                    showQuestion(currentQuestionIndex);
+                    questionContainer.classList.remove('opacity-0');
+                }, 500);
             } else {
-                questionContainer.classList.add('hidden'); // Esconde as perguntas Sim/Não
-                multipleChoiceContainer.classList.remove('hidden');
-                showMultipleChoiceQuestion(currentMultipleChoiceIndex);
+                questionContainer.classList.add('opacity-0');
+                setTimeout(() => {
+                    multipleChoiceContainer.classList.remove('hidden');
+                    showMultipleChoiceQuestion(currentMultipleChoiceIndex);
+                    questionContainer.classList.add('hidden');
+                    multipleChoiceContainer.classList.add('opacity-0');
+                    setTimeout(() => multipleChoiceContainer.classList.remove('opacity-0'), 10);
+                }, 500);
             }
-            toggleButtons();
         }
 
+        // Função para voltar para a pergunta anterior
         function showPreviousQuestion() {
             if (currentQuestionIndex > 0) {
                 currentQuestionIndex--;
-                showQuestion(currentQuestionIndex);
+                questionContainer.classList.add('opacity-0');
+                setTimeout(() => {
+                    showQuestion(currentQuestionIndex);
+                    questionContainer.classList.remove('opacity-0');
+                }, 500);
             } else if (currentMultipleChoiceIndex > 0) {
-                multipleChoiceContainer.classList.add('hidden');
-                questionContainer.classList.remove('hidden');
-                showMultipleChoiceQuestion(currentMultipleChoiceIndex - 1); // Exibe a pergunta múltipla escolha anterior
-                currentMultipleChoiceIndex--; // Decrementa o índice de múltipla escolha
+                multipleChoiceContainer.classList.add('opacity-0');
+                setTimeout(() => {
+                    multipleChoiceContainer.classList.add('hidden');
+                    questionContainer.classList.remove('hidden');
+                    showQuestion(currentQuestionIndex);
+                    multipleChoiceContainer.classList.remove('opacity-0');
+                }, 500);
+                currentMultipleChoiceIndex--;
             }
-            toggleButtons();
         }
 
-
+        // Controlar visibilidade dos botões
         function toggleButtons() {
             if (currentQuestionIndex === 0 && currentMultipleChoiceIndex === 0) {
                 backButton.disabled = true;
@@ -166,28 +192,6 @@
         multipleChoiceContainer.addEventListener('change', function () {
             toggleButtons();
         });
-
-        document.getElementById('questionForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const formData = new FormData(document.getElementById('questionForm'));
-
-            fetch(document.getElementById('questionForm').action, {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => {
-                    if (response.ok) {
-                        alert('Respostas enviadas com sucesso!');
-                        // Redirecionar para outra página ou fazer algo mais
-                    } else {
-                        alert('Erro ao enviar as respostas. Tente novamente.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    alert('Ocorreu um erro ao enviar o formulário. Tente novamente mais tarde.');
-                });
-        });
     });
+
 </script>

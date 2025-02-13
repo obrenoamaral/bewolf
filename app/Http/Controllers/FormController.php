@@ -15,7 +15,7 @@ class FormController extends Controller
     public function showForm()
     {
         $questions = Question::with('answers')->get();
-        $multipleChoiceQuestions = QuestionMultipleChoice::with('answersMultipleChoices')->get(); // Nome do relacionamento corrigido
+        $multipleChoiceQuestions = QuestionMultipleChoice::with('answersMultipleChoice')->get();
 
 //        dd($multipleChoiceQuestions);
         return view('form', compact('questions', 'multipleChoiceQuestions'));
@@ -26,9 +26,13 @@ class FormController extends Controller
         try {
             DB::beginTransaction();
 
-            $answers = $request->input('answers', []); // Respostas simples
-            $multipleChoiceAnswers = $request->input('multiple_choice_answers', []); // Respostas de múltipla escolha
+            // Respostas simples
+            $answers = $request->input('answers', []);
 
+            // Respostas de múltipla escolha
+            $multipleChoiceAnswers = $request->input('multiple_choice_answers', []);
+
+            // Recuperar ou criar o cliente
             $client = Client::where('email', $request->input('email'))->first();
 
             if (!$client) {
@@ -53,13 +57,14 @@ class FormController extends Controller
                 foreach ($answerIds as $answerId) {
                     ClientAnswer::updateOrCreate(
                         ['client_id' => $client->id, 'question_id' => $questionId, 'multiple_choice_answer_id' => $answerId],
-                        ['answer_id' => null] // Ou algum valor padrão, se necessário
+                        ['answer_id' => null] // Valor padrão, se necessário
                     );
                 }
             }
 
             DB::commit();
 
+            // Geração do relatório
             $diagnosisController = new DiagnosisController();
             $diagnosisController->generateReport($client->id);
 
@@ -73,13 +78,16 @@ class FormController extends Controller
         }
     }
 
+
     public function submitForm(Request $request)
     {
         $request->validate([
             'answers' => 'required|array',
-            'answers.*' => 'required|exists:answers,id',
+            'answers.*' => 'required|exists:answers,id',  // Valida que cada resposta simples existe
             'multiple_choice_answers' => 'nullable|array',
-            'multiple_choice_answers.*' => 'nullable|exists:answers_multiple_choices,id',
+            'multiple_choice_answers.*' => 'nullable|array', // Permite que múltiplas respostas sejam enviadas
+            'multiple_choice_answers.*.*' => 'nullable|exists:answers_multiple_choices,id', // Valida que as respostas de múltipla escolha existem
         ]);
     }
+
 }

@@ -11,7 +11,8 @@ class Client extends Model
 
     protected $fillable = ['name', 'company', 'email', 'phone'];
 
-    public function answers() {
+    public function answers()
+    {
         return $this->hasMany(ClientAnswer::class);
     }
 }

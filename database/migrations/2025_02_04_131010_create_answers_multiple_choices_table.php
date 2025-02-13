@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('answers_multiple_choices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('question_multiple_choice_id')->constrained('question_multiple_choices')->onDelete('cascade'); // Nome da tabela corrigido
+            $table->unsignedBigInteger('question_multiple_choice_id');
             $table->string('answer');
-            $table->integer('weight');
-            $table->text('diagnosis');
             $table->timestamps();
+
+            $table->foreign('question_multiple_choice_id')->references('id')->on('question_multiple_choices')->onDelete('cascade');
         });
     }
 

@@ -13,12 +13,16 @@ return new class extends Migration
     {
         Schema::create('answers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('question_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('question_id');
             $table->string('answer');
-            $table->integer('weight');
-            $table->text('diagnosis')->nullable();
-            $table->text('solution')->nullable();
+            $table->string('diagnosis')->nullable();
+            $table->string('solution')->nullable();
+            $table->string('strength_weakness_title')->nullable();
+            $table->enum('strength_weakness', ['strong', 'weak'])->nullable();
+            $table->integer('weight')->default(0);
             $table->timestamps();
+
+            $table->foreign('question_id')->references('id')->on('questions')->onDelete('cascade');
         });
     }
 

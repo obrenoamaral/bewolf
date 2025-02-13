@@ -9,20 +9,10 @@ class AnswersMultipleChoice extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'question_multiple_choice_id',
-        'answer',
-        'weight',
-        'diagnosis',
-    ];
+    protected $fillable = ['question_multiple_choice_id', 'answer'];
 
-    // Relacionamento com a pergunta
-    public function questionMultipleChoice() { // Nome do relacionamento (singular)
-        return $this->belongsTo(QuestionMultipleChoice::class);
-    }
-
-    public function clientAnswers()
+    public function questionMultipleChoice()
     {
-        return $this->hasMany(ClientAnswer::class);
+        return $this->belongsTo(QuestionMultipleChoice::class);
     }
 }

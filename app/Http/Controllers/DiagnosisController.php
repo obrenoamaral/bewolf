@@ -60,6 +60,11 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
         $weakPoints = [];
 
         $reportData = $clientAnswers->map(function ($clientAnswer) use (&$strongPoints, &$weakPoints) {
+            // Verifica se $clientAnswer->answer e $clientAnswer->question existem
+            if (!$clientAnswer->answer || !$clientAnswer->question) {
+                return null; // Ignora respostas inválidas
+            }
+
             $data = [
                 'question' => $clientAnswer->question->question,
                 'diagnosis_title' => $clientAnswer->question->diagnosis_title,
@@ -77,20 +82,33 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
             }
 
             return $data;
-        });
+        })->filter(); // Remove entradas nulas
 
+        // Verifica se há dados válidos após o filtro
+        if ($reportData->isEmpty()) {
+            return response()->json(['message' => 'No valid reports found for this client.'], 404);
+        }
 
+        // Recupera respostas de múltipla escolha
         $multipleChoiceAnswers = ClientAnswer::where('client_id', $client_id)
             ->whereHas('questionMultipleChoice') // Deve usar o nome do relacionamento (corrigido no model)
             ->with(['questionMultipleChoice', 'answerMultipleChoice']) // Deve usar o nome do relacionamento (corrigido no model)
             ->get();
 
-        dd($multipleChoiceAnswers);
+        // Verifica se há respostas de múltipla escolha
+        if ($multipleChoiceAnswers->isEmpty()) {
+            \Log::warning('No multiple choice answers found for client: ' . $client_id);
+        }
 
+        // Calcula o peso total das respostas
+        $totalWeight = $clientAnswers->sum(function ($clientAnswer) {
+            return $clientAnswer->answer ? $clientAnswer->answer->weight : 0; // Verifica se $clientAnswer->answer existe
+        });
 
-        $totalWeight = $clientAnswers->sum(fn($clientAnswer) => $clientAnswer->answer->weight);
+        // Calcula o diagnóstico
         $diagnosisResult = $this->calculateDiagnosis($totalWeight);
 
+        // Gera o PDF
         $fileName = 'diagnostico_' . $client_id . '.pdf';
         $pdfStorage = storage_path('app/public/' . $client_id . '.pdf');
 
@@ -99,16 +117,15 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
                 ->view('reports.index', compact('reportData', 'totalWeight', 'diagnosisResult', 'strongPoints', 'weakPoints', 'multipleChoiceAnswers'))
                 ->save($pdfStorage);
 
+            // Envia o relatório por e-mail
             $this->sendReportByEmail($client_id, $pdfStorage);
 
         } catch (\Exception $e) {
-            Log::error('Erro ao gerar ou enviar relatório: ' . $e->getMessage()); // Log do erro
-            // Pode retornar uma resposta de erro ou redirecionar com uma mensagem
+            \Log::error('Erro ao gerar ou enviar relatório: ' . $e->getMessage()); // Log do erro
             return back()->with('error', 'Erro ao gerar o relatório. Tente novamente mais tarde.');
         }
 
         return back()->with('success', 'Relatório gerado e enviado com sucesso!'); // Mensagem de sucesso
-
     }
 
     public function sendReportByEmail($client_id, $pdfStorage)

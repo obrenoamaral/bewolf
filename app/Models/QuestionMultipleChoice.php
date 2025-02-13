@@ -9,17 +9,10 @@ class QuestionMultipleChoice extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'question_title',
-        'solution_title',
-    ];
+    protected $fillable = ['question_title'];
 
     public function answersMultipleChoice()
     {
-        return $this->hasMany(AnswersMultipleChoice::class, 'question_multiple_choice_id', 'id');
-    }
-    public function clientAnswers()
-    {
-        return $this->hasMany(ClientAnswer::class);
+        return $this->hasMany(AnswersMultipleChoice::class);
     }
 }

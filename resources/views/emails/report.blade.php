@@ -63,7 +63,7 @@
         .btn {
             display: inline-block;
             padding: 12px 24px;
-            background-color: #3b82f6;
+            background-color: #000000;
             color: #fff;
             font-weight: bold;
             text-align: center;
@@ -75,7 +75,7 @@
         }
 
         .btn:hover {
-            background-color: #2563eb;
+            background-color: #0f0f0f;
         }
 
         /* Rodapé */
@@ -104,7 +104,7 @@
         </p>
 
         <!-- Botão de Ação -->
-        <a href="https://www.example.com" class="btn">Ver Relatório Completo</a>
+        <a href="https://www.bwolf.com.br" class="btn">Visite o nosso site</a>
 
         <p class="text-base footer">
             Atenciosamente,<br>

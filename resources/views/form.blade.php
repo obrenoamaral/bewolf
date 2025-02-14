@@ -251,32 +251,35 @@
                 console.log(key, value);
             }
 
-            // Enviar os dados via POST
             fetch('/form/submit-info', {
-                method: 'POST', // Certifique-se de que o método é POST
-                body: formData, // Envia os dados do formulário
+                method: 'POST',
+                body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken.content // Inclui o token CSRF
+                    'X-CSRF-TOKEN': csrfToken.content
                 }
             })
                 .then(response => {
-                    if (response.redirected) {
-                        // Redireciona para a página de agradecimento
-                        window.location.href = response.url;
-                    } else {
-                        return response.json();
+                    if (!response.ok) {
+                        return response.json().then(error => {
+                            throw new Error(error.message || 'Erro na requisição: ' + response.status);
+                        });
                     }
+                    return response.json();
                 })
                 .then(data => {
                     if (data && data.success) {
-                        window.location.href = '/thankyou'; // Redireciona manualmente
+                        alert(data.message || 'Informações enviadas com sucesso!');
+                        window.location.href = '/thankyou';
+                    } else if (data && data.message) {
+                        alert(data.message);
                     } else {
-                        alert('Ocorreu um erro ao enviar as informações. Tente novamente.');
+                        alert('Informações enviadas com sucesso!');
+                        window.location.href = '/thankyou';
                     }
                 })
                 .catch(error => {
                     console.error('Erro:', error);
-                    alert('Erro ao enviar o formulário. Por favor, tente novamente.');
+                    alert(error.message || 'Erro ao enviar o formulário. Por favor, tente novamente.');
                 });
         });
     });

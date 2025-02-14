@@ -12,10 +12,8 @@ use App\Http\Controllers\QuestionMultipleChoiceController;
 use Illuminate\Support\Facades\Route;
 use Maatwebsite\Excel\Facades\Excel;
 
-// Rotas públicas (não requerem autenticação)
 Route::get('/', [FormController::class, 'showForm'])->name('form.show');
 Route::post('/form/submit-info', [FormController::class, 'submitInfo'])->name('form.submitInfo');
-Route::post('/form/submit', [FormController::class, 'submitForm'])->name('form.submit');
 Route::get('/thankyou', function () { return view('thanks'); })->name('thanks');
 
 // Rotas protegidas por autenticação

@@ -75,26 +75,20 @@ class FormController extends Controller
                 throw new \Exception('Falha ao gerar o relatório.');
             }
 
-            return redirect('/thankyou')->with('success', 'Respostas enviadas com sucesso! O relatório foi enviado para seu e-mail.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Respostas enviadas com sucesso!',
+                'redirect' => url('/thankyou')
+            ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
 
             \Log::error('Erro ao enviar respostas: ' . $e->getMessage());
 
-            return redirect('/form')->with('error', 'Ocorreu um erro ao enviar as respostas. Tente novamente mais tarde.');
+            return redirect('/')->with('error', 'Ocorreu um erro ao enviar as respostas. Tente novamente mais tarde.');
         }
     }
 
-
-    public function submitForm(Request $request)
-    {
-        $request->validate([
-            'answers' => 'required|array',
-            'answers.*' => 'required|exists:answers,id',  // Valida que cada resposta simples existe
-            'multiple_choice_answers' => 'nullable|array',
-            'multiple_choice_answers.*' => 'nullable|array', // Permite que múltiplas respostas sejam enviadas
-            'multiple_choice_answers.*.*' => 'nullable|exists:answers_multiple_choices,id', // Valida que as respostas de múltipla escolha existem
-        ]);
-    }
 
 }

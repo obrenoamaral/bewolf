@@ -236,29 +236,34 @@
 
             const formData = new FormData(this);
 
-            // Coleta respostas de múltipla escolha agrupadas por pergunta
+            // Coleta respostas de questões simples
+            document.querySelectorAll('input[name^="answers"]:checked').forEach(input => {
+                const questionId = input.name.match(/\[(\d+)\]/)[1];
+                formData.append(`answers[${questionId}]`, input.value);
+            });
+
+            // Coleta respostas de múltipla escolha
             const multipleChoiceAnswers = {};
             document.querySelectorAll('input[name^="multiple_choice_answers"]:checked').forEach(input => {
-                const questionId = input.name.match(/\[(\d+)\]/)[1]; // Extrai o ID da pergunta
+                const questionId = input.name.match(/\[(\d+)\]/)[1];
                 if (!multipleChoiceAnswers[questionId]) {
                     multipleChoiceAnswers[questionId] = [];
                 }
                 multipleChoiceAnswers[questionId].push(input.value);
             });
 
-            // Adiciona as respostas agrupadas ao FormData
+            // Adiciona as respostas de múltipla escolha ao FormData
             for (const [questionId, answers] of Object.entries(multipleChoiceAnswers)) {
                 formData.append(`multiple_choice_answers[${questionId}]`, answers.join(','));
             }
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-            // Envia os dados
             fetch('/form/submit-info', {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken.content
+                    'X-CSRF-TOKEN': csrfToken
                 }
             })
                 .then(response => response.json())
@@ -275,5 +280,4 @@
                 });
         });
     });
-
 </script>

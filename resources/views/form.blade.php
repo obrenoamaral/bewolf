@@ -197,6 +197,12 @@
             }
         }
 
+        startButton.addEventListener('click', function () {
+            introScreen.classList.add('hidden');
+            questionScreen.classList.remove('hidden');
+            showQuestion(currentQuestionIndex);
+        });
+
         nextButton.addEventListener('click', function () {
             showNextQuestion();
         });

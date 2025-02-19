@@ -225,7 +225,7 @@
 
         clientInfoForm.addEventListener('submit', function (e) {
             e.preventDefault(); // Impede o envio tradicional do formulário
-            console.log('Formulário submetido via JavaScript'); // Log para depuração
+            console.log('Formulário submetido via JavaScript');
 
             const formData = new FormData(this);
 
@@ -245,42 +245,19 @@
                 return;
             }
 
-            // Log dos dados coletados
-            console.log("Dados coletados:");
-            for (let [key, value] of formData.entries()) {
-                console.log(key, value);
-            }
-
+            // Faz a requisição em segundo plano sem esperar resposta
             fetch('/form/submit-info', {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'X-CSRF-TOKEN': csrfToken.content
                 }
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(error => {
-                            throw new Error(error.message || 'Erro na requisição: ' + response.status);
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.success) {
-                        alert(data.message || 'Informações enviadas com sucesso!');
-                        window.location.href = '/thankyou';
-                    } else if (data && data.message) {
-                        alert(data.message);
-                    } else {
-                        alert('Informações enviadas com sucesso!');
-                        window.location.href = '/thankyou';
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    alert(error.message || 'Erro ao enviar o formulário. Por favor, tente novamente.');
-                });
+            }).catch(error => {
+                console.error('Erro ao enviar o formulário:', error);
+            });
+
+            // Redireciona o usuário imediatamente
+            window.location.href = '/thankyou';
         });
     });
 

@@ -264,5 +264,6 @@
                     alert('Erro ao enviar o formulário. Por favor, tente novamente.');
                 });
         });
+    });
 
 </script>

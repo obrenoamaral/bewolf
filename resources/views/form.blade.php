@@ -40,7 +40,7 @@
 </div>
 <div class="bg-black opacity-70 h-screen flex items-center justify-center hidden" id="clientInfoScreen">
     <div class="max-w-4xl w-full p-8">
-        <form id="clientInfoForm">
+        <form id="clientInfoForm" >
             @csrf
             <div class="mb-4">
                 <label for="name" class="block font-medium text-gray-100">Nome</label>
@@ -250,6 +250,8 @@
             for (const [questionId, answers] of Object.entries(multipleChoiceAnswers)) {
                 formData.append(`multiple_choice_answers[${questionId}]`, answers.join(','));
             }
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
             // Envia os dados
             fetch('/form/submit-info', {

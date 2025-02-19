@@ -118,7 +118,7 @@
                 <p class="font-semibold mb-2 text-gray-100">${question.question_title}</p>
                 ${question.answers_multiple_choice.map(answer => `
                     <label class="block mb-2 text-gray-100">
-                        <input type="checkbox" name="multiple_choice_answers[${question.id}][]" value="${answer.id}" class="form-checkbox h-4 w-4 text-black border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-200">
+                        <input type="radio" name="multiple_choice_answers[${question.id}]" value="${answer.id}" class="form-radio h-4 w-4 text-black border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-200">
                         ${answer.answer}
                     </label>
                 `).join('')}
@@ -186,19 +186,16 @@
             }
 
             if (currentQuestionIndex < questions.length) {
-                const isAnswered = document.querySelector(`input[name="answers[${questions[currentQuestionIndex].id}]"]:checked`);
+                const currentQuestionId = questions[currentQuestionIndex].id;
+                const isAnswered = document.querySelector(`input[name="answers[${currentQuestionId}]"]:checked`);
                 nextButton.disabled = !isAnswered;
             } else {
-                const isAnswered = document.querySelector(`input[name="multiple_choice_answers[${multipleChoiceQuestions[currentMultipleChoiceIndex].id}]"]:checked`);
+                // Nova lógica para radio buttons: verifica se um radio button está marcado na pergunta atual
+                const currentMultipleChoiceId = multipleChoiceQuestions[currentMultipleChoiceIndex].id;
+                const isAnswered = document.querySelector(`input[name="multiple_choice_answers[${currentMultipleChoiceId}]"]:checked`);
                 nextButton.disabled = !isAnswered;
             }
         }
-
-        startButton.addEventListener('click', function () {
-            introScreen.classList.add('hidden');
-            questionScreen.classList.remove('hidden');
-            showQuestion(currentQuestionIndex);
-        });
 
         nextButton.addEventListener('click', function () {
             showNextQuestion();

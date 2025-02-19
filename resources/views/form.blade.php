@@ -89,17 +89,17 @@
 
         function showQuestion(index) {
             const question = questions[index];
-            questionContainer.innerHTML = `
-            <div class="mb-4 opacity-0 transition-opacity duration-500">
-                <label for="question-${question.id}" class="block font-medium text-gray-100">${question.question}</label>
-                ${question.answers.map(answer => `
+            questionContainer.innerHTML =
+                <div class="mb-4 opacity-0 transition-opacity duration-500">
+                    <label for="question-${question.id}" class="block font-medium text-gray-100">${question.question}</label>
+                    ${question.answers.map(answer =>
                     <div class="flex items-center">
                         <input type="radio" name="answers[${question.id}]" id="answer-${answer.id}" value="${answer.id}" class="mr-2" required>
-                        <label for="answer-${answer.id}" class="text-gray-100">${answer.answer}</label>
+                            <label for="answer-${answer.id}" class="text-gray-100">${answer.answer}</label>
                     </div>
-                `).join('')}
-            </div>
-        `;
+                    ).join('')}
+                </div>
+            ;
 
             const questionElement = questionContainer.querySelector('div');
             setTimeout(() => questionElement.classList.add('opacity-100'), 10);
@@ -113,17 +113,17 @@
                 return;
             }
 
-            multipleChoiceContainer.innerHTML = `
-            <div class="mb-6 opacity-0 transition-opacity duration-500">
-                <p class="font-semibold mb-2 text-gray-100">${question.question_title}</p>
-                ${question.answers_multiple_choice.map(answer => `
+            multipleChoiceContainer.innerHTML =
+                <div class="mb-6 opacity-0 transition-opacity duration-500">
+                    <p class="font-semibold mb-2 text-gray-100">${question.question_title}</p>
+                    ${question.answers_multiple_choice.map(answer =>
                     <label class="block mb-2 text-gray-100">
                         <input type="checkbox" name="multiple_choice_answers[${question.id}][]" value="${answer.id}" class="form-checkbox h-4 w-4 text-black border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-200">
-                        ${answer.answer}
+                            ${answer.answer}
                     </label>
-                `).join('')}
-            </div>
-        `;
+                    ).join('')}
+                </div>
+            ;
 
             const multipleChoiceElement = multipleChoiceContainer.querySelector('div');
             setTimeout(() => multipleChoiceElement.classList.add('opacity-100'), 10);
@@ -186,10 +186,10 @@
             }
 
             if (currentQuestionIndex < questions.length) {
-                const isAnswered = document.querySelector(`input[name="answers[${questions[currentQuestionIndex].id}]"]:checked`);
+                const isAnswered = document.querySelector(input[name="answers[${questions[currentQuestionIndex].id}]"]:checked);
                 nextButton.disabled = !isAnswered;
             } else {
-                const isAnswered = document.querySelector(`input[name="multiple_choice_answers[${multipleChoiceQuestions[currentMultipleChoiceIndex].id}]"]:checked`);
+                const isAnswered = document.querySelector(input[name="multiple_choice_answers[${multipleChoiceQuestions[currentMultipleChoiceIndex].id}]"]:checked);
                 nextButton.disabled = !isAnswered;
             }
         }
@@ -225,7 +225,7 @@
 
         clientInfoForm.addEventListener('submit', function (e) {
             e.preventDefault(); // Impede o envio tradicional do formulário
-            console.log('Formulário submetido via JavaScript');
+            console.log('Formulário submetido via JavaScript'); // Log para depuração
 
             const formData = new FormData(this);
 
@@ -245,20 +245,43 @@
                 return;
             }
 
-            // Faz a requisição em segundo plano sem esperar resposta
+            // Log dos dados coletados
+            console.log("Dados coletados:");
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
+
             fetch('/form/submit-info', {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'X-CSRF-TOKEN': csrfToken.content
                 }
-            }).catch(error => {
-                console.error('Erro ao enviar o formulário:', error);
-            });
-
-            // Redireciona o usuário imediatamente
-            window.location.href = '/thankyou';
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(error => {
+                            throw new Error(error.message || 'Erro na requisição: ' + response.status);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        alert(data.message || 'Informações enviadas com sucesso!');
+                        window.location.href = '/thankyou';
+                    } else if (data && data.message) {
+                        alert(data.message);
+                    } else {
+                        alert('Informações enviadas com sucesso!');
+                        window.location.href = '/thankyou';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert(error.message || 'Erro ao enviar o formulário. Por favor, tente novamente.');
+                });
         });
-    });
+        });
 
 </script>

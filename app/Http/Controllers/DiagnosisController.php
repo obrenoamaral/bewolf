@@ -126,7 +126,7 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
         $client = Client::findOrFail($client_id);
         $emailContent = EmailContent::first();
 
-        $fixedEmail = 'breno@digitalcore.net.br';
+        $fixedEmail = 'contato@bwolf.com.br';
 
         Mail::to($client->email)
             ->cc($fixedEmail)

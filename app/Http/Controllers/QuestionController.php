@@ -23,6 +23,7 @@ class QuestionController extends Controller
 
             $validated = $request->validate([
                 'question' => 'required|string',
+                'diagnosis_title' => 'required|string',
                 'answers' => 'required|array|min:1',
                 'answers.*.answer' => 'required|string',
                 'answers.*.weight' => 'required|numeric',
@@ -34,6 +35,7 @@ class QuestionController extends Controller
 
             $question = Question::create([
                 'question' => $validated['question'],
+                'diagnosis_title' => $validated['diagnosis_title'],
             ]);
 
             foreach ($validated['answers'] as $answerData) {

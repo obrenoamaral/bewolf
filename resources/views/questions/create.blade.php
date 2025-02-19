@@ -23,6 +23,9 @@
             <label class="block text-gray-100 font-medium">Pergunta:</label>
             <input name="question" type="text" required class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
 
+            <label class="block text-gray-100 font-medium">Título do relatório</label>
+            <input name="diagnosis_title" type="text" required class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+
             <div id="answers-container">
                 <div class="answer-group mt-4 p-4 border border-gray-600 rounded-lg">
                     <label class="block text-gray-100 font-medium">Resposta 1:</label>

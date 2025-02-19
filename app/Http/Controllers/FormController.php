@@ -45,6 +45,9 @@ class FormController extends Controller
 
             // Salvar respostas simples
             foreach ($answers as $questionId => $answerId) {
+                // Garantir que answer_id seja um inteiro
+                $answerId = is_array($answerId) ? (int) $answerId[0] : (int) $answerId;
+
                 ClientAnswer::updateOrCreate(
                     ['client_id' => $client->id, 'question_id' => $questionId],
                     ['answer_id' => $answerId]
@@ -53,19 +56,21 @@ class FormController extends Controller
 
             // Salvar respostas de múltipla escolha
             foreach ($multipleChoiceAnswers as $questionId => $answerIds) {
-                if (is_array($answerIds)) {
-                    foreach ($answerIds as $answerId) {
-                        ClientAnswer::updateOrCreate(
-                            [
-                                'client_id' => $client->id,
-                                'question_multiple_choices_id' => $questionId,
-                                'multiple_choice_answer_id' => $answerId,
-                            ],
-                            ['answer_id' => null]
-                        );
-                    }
-                } else {
-                    \Log::warning("Resposta de múltipla escolha inválida: questionId = {$questionId}, answerIds = " . print_r($answerIds, true));
+                // Se answerIds não for um array, transforme-o em um array com um único valor
+                $answerIds = is_array($answerIds) ? $answerIds : [$answerIds];
+
+                foreach ($answerIds as $answerId) {
+                    // Garantir que multiple_choice_answer_id seja um inteiro
+                    $answerId = (int) $answerId;
+
+                    ClientAnswer::updateOrCreate(
+                        [
+                            'client_id' => $client->id,
+                            'question_multiple_choices_id' => $questionId,
+                            'multiple_choice_answer_id' => $answerId,
+                        ],
+                        ['answer_id' => null]
+                    );
                 }
             }
 
@@ -93,6 +98,5 @@ class FormController extends Controller
             return redirect('/')->with('error', 'Ocorreu um erro ao enviar as respostas. Tente novamente mais tarde.');
         }
     }
-
 
 }

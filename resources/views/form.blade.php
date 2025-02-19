@@ -130,6 +130,7 @@
             const multipleChoiceElement = multipleChoiceContainer.querySelector('div');
             setTimeout(() => multipleChoiceElement.classList.add('opacity-100'), 10);
 
+            // Verifica se é a última questão de múltipla escolha
             if (index === multipleChoiceQuestions.length - 1) {
                 nextButton.classList.add('hidden');
                 submitButton.classList.remove('hidden');
@@ -151,8 +152,12 @@
                 questionContainer.classList.add('opacity-0');
                 setTimeout(() => {
                     multipleChoiceContainer.classList.remove('hidden');
+
+                    // Incrementa o índice ANTES de exibir a próxima pergunta de múltipla escolha
                     currentMultipleChoiceIndex++;
-                    showMultipleChoiceQuestion(currentMultipleChoiceIndex - 1);
+
+                    showMultipleChoiceQuestion(currentMultipleChoiceIndex - 1); // Passa o índice correto
+
                     questionContainer.classList.add('hidden');
                     multipleChoiceContainer.classList.add('opacity-0');
                     setTimeout(() => multipleChoiceContainer.classList.remove('opacity-0'), 10);
@@ -192,6 +197,7 @@
                 const isAnswered = document.querySelector(`input[name="answers[${currentQuestionId}]"]:checked`);
                 nextButton.disabled = !isAnswered;
             } else {
+                // Nova lógica para radio buttons: verifica se um radio button está marcado na pergunta atual
                 const currentMultipleChoiceId = multipleChoiceQuestions[currentMultipleChoiceIndex].id;
                 const isAnswered = document.querySelector(`input[name="multiple_choice_answers[${currentMultipleChoiceId}]"]:checked`);
                 nextButton.disabled = !isAnswered;
@@ -214,24 +220,24 @@
 
         questionContainer.addEventListener('change', function (event) {
             const questionId = event.target.name.match(/\[(\d+)\]/)[1];
-            answers[questionId] = event.target.value;
+            if (!answers[questionId]) {
+                answers[questionId] = [];
+            }
+            if (!answers[questionId].includes(event.target.value)) {
+                answers[questionId].push(event.target.value);
+            }
             toggleButtons();
         });
 
         multipleChoiceContainer.addEventListener('change', function (event) {
             const questionId = event.target.name.match(/\[(\d+)\]/)[1];
-            if (!multipleChoiceAnswers[questionId]) {
-                multipleChoiceAnswers[questionId] = [];
-            }
-            if (event.target.checked) {
-                multipleChoiceAnswers[questionId].push(event.target.value);
-            } else {
-                multipleChoiceAnswers[questionId] = multipleChoiceAnswers[questionId].filter(value => value !== event.target.value);
-            }
+            multipleChoiceAnswers[questionId] = event.target.value; // Apenas um valor é selecionado para múltipla escolha
             toggleButtons();
         });
 
+        // Comportamento do botão "Enviar"
         submitButton.addEventListener('click', function () {
+            // Oculta a tela de questões e exibe o formulário de informações do cliente
             questionScreen.classList.add('hidden');
             clientInfoScreen.classList.remove('hidden');
         });
@@ -242,15 +248,15 @@
             const formData = new FormData(this);
 
             // Coleta respostas de questões simples
-            document.querySelectorAll('input[name^="answers"]:checked').forEach(input => {
-                const questionId = input.name.match(/\[(\d+)\]/)[1];
-                formData.append(`answers[${questionId}]`, input.value);
+            Object.keys(answers).forEach(questionId => {
+                answers[questionId].forEach(value => {
+                    formData.append(`answers[${questionId}][]`, value); // Envia como array
+                });
             });
 
             // Coleta respostas de múltipla escolha
-            document.querySelectorAll('input[name^="multiple_choice_answers"]:checked').forEach(input => {
-                const questionId = input.name.match(/\[(\d+)\]/)[1];
-                formData.append(`multiple_choice_answers[${questionId}][]`, input.value);
+            Object.keys(multipleChoiceAnswers).forEach(questionId => {
+                formData.append(`multiple_choice_answers[${questionId}]`, multipleChoiceAnswers[questionId]);
             });
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -276,4 +282,5 @@
                 });
         });
     });
+
 </script>

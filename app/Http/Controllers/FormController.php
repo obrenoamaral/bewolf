@@ -53,7 +53,7 @@ class FormController extends Controller
 
             // Salvar respostas de múltipla escolha
             foreach ($multipleChoiceAnswers as $questionId => $answerIds) {
-                if (is_array($answerIds)) { // Verifica se $answerIds é um array antes de iterar
+                if (is_array($answerIds)) {
                     foreach ($answerIds as $answerId) {
                         ClientAnswer::updateOrCreate(
                             [

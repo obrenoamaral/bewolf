@@ -83,6 +83,8 @@
 
         const questions = @json($questions);
         const multipleChoiceQuestions = @json($multipleChoiceQuestions);
+        const answers = {};
+        const multipleChoiceAnswers = {};
 
         let currentQuestionIndex = 0;
         let currentMultipleChoiceIndex = 0;
@@ -128,7 +130,6 @@
             const multipleChoiceElement = multipleChoiceContainer.querySelector('div');
             setTimeout(() => multipleChoiceElement.classList.add('opacity-100'), 10);
 
-            // Verifica se é a última questão de múltipla escolha
             if (index === multipleChoiceQuestions.length - 1) {
                 nextButton.classList.add('hidden');
                 submitButton.classList.remove('hidden');
@@ -150,12 +151,8 @@
                 questionContainer.classList.add('opacity-0');
                 setTimeout(() => {
                     multipleChoiceContainer.classList.remove('hidden');
-
-                    // Incrementa o índice ANTES de exibir a próxima pergunta de múltipla escolha
-                    currentMultipleChoiceIndex++;  // Esta é a linha crucial que faltava
-
-                    showMultipleChoiceQuestion(currentMultipleChoiceIndex -1 ); // Passa o índice correto
-
+                    currentMultipleChoiceIndex++;
+                    showMultipleChoiceQuestion(currentMultipleChoiceIndex - 1);
                     questionContainer.classList.add('hidden');
                     multipleChoiceContainer.classList.add('opacity-0');
                     setTimeout(() => multipleChoiceContainer.classList.remove('opacity-0'), 10);
@@ -195,7 +192,6 @@
                 const isAnswered = document.querySelector(`input[name="answers[${currentQuestionId}]"]:checked`);
                 nextButton.disabled = !isAnswered;
             } else {
-                // Nova lógica para radio buttons: verifica se um radio button está marcado na pergunta atual
                 const currentMultipleChoiceId = multipleChoiceQuestions[currentMultipleChoiceIndex].id;
                 const isAnswered = document.querySelector(`input[name="multiple_choice_answers[${currentMultipleChoiceId}]"]:checked`);
                 nextButton.disabled = !isAnswered;
@@ -216,17 +212,26 @@
             showPreviousQuestion();
         });
 
-        questionContainer.addEventListener('change', function () {
+        questionContainer.addEventListener('change', function (event) {
+            const questionId = event.target.name.match(/\[(\d+)\]/)[1];
+            answers[questionId] = event.target.value;
             toggleButtons();
         });
 
-        multipleChoiceContainer.addEventListener('change', function () {
+        multipleChoiceContainer.addEventListener('change', function (event) {
+            const questionId = event.target.name.match(/\[(\d+)\]/)[1];
+            if (!multipleChoiceAnswers[questionId]) {
+                multipleChoiceAnswers[questionId] = [];
+            }
+            if (event.target.checked) {
+                multipleChoiceAnswers[questionId].push(event.target.value);
+            } else {
+                multipleChoiceAnswers[questionId] = multipleChoiceAnswers[questionId].filter(value => value !== event.target.value);
+            }
             toggleButtons();
         });
 
-        // Comportamento do botão "Enviar"
         submitButton.addEventListener('click', function () {
-            // Oculta a tela de questões e exibe o formulário de informações do cliente
             questionScreen.classList.add('hidden');
             clientInfoScreen.classList.remove('hidden');
         });
@@ -243,16 +248,10 @@
             });
 
             // Coleta respostas de múltipla escolha
-            const multipleChoiceAnswers = {};
             document.querySelectorAll('input[name^="multiple_choice_answers"]:checked').forEach(input => {
                 const questionId = input.name.match(/\[(\d+)\]/)[1];
                 formData.append(`multiple_choice_answers[${questionId}][]`, input.value);
             });
-
-            // Adiciona as respostas de múltipla escolha ao FormData
-            for (const [questionId, answers] of Object.entries(multipleChoiceAnswers)) {
-                formData.append(`multiple_choice_answers[${questionId}]`, answers.join(','));
-            }
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 

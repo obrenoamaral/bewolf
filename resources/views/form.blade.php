@@ -7,7 +7,7 @@
     <title>Formulário de Perguntas</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-no-repeat bg-cover bg-center h-screen m-auto" style="background-image: url('{{ asset('background.webp') }}');">
+<body class="bg-no-repeat bg-cover bg-center h-screen m-auto" style="background-image: url('{{ asset('background1.webp') }}');">
 
 <div class="bg-black opacity-70 h-screen flex items-center justify-center" id="introScreen">
     <div class="max-w-4xl w-full p-8 text-start">

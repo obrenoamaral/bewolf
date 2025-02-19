@@ -150,7 +150,12 @@
                 questionContainer.classList.add('opacity-0');
                 setTimeout(() => {
                     multipleChoiceContainer.classList.remove('hidden');
-                    showMultipleChoiceQuestion(currentMultipleChoiceIndex);
+
+                    // Incrementa o índice ANTES de exibir a próxima pergunta de múltipla escolha
+                    currentMultipleChoiceIndex++;  // Esta é a linha crucial que faltava
+
+                    showMultipleChoiceQuestion(currentMultipleChoiceIndex -1 ); // Passa o índice correto
+
                     questionContainer.classList.add('hidden');
                     multipleChoiceContainer.classList.add('opacity-0');
                     setTimeout(() => multipleChoiceContainer.classList.remove('opacity-0'), 10);

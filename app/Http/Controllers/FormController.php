@@ -53,15 +53,19 @@ class FormController extends Controller
 
             // Salvar respostas de múltipla escolha
             foreach ($multipleChoiceAnswers as $questionId => $answerIds) {
-                foreach ($answerIds as $answerId) {
-                    ClientAnswer::updateOrCreate(
-                        [
-                            'client_id' => $client->id,
-                            'question_multiple_choices_id' => $questionId,
-                            'multiple_choice_answer_id' => $answerId,
-                        ],
-                        ['answer_id' => null] // Resposta simples não é usada aqui
-                    );
+                if (is_array($answerIds)) { // Verifica se $answerIds é um array antes de iterar
+                    foreach ($answerIds as $answerId) {
+                        ClientAnswer::updateOrCreate(
+                            [
+                                'client_id' => $client->id,
+                                'question_multiple_choices_id' => $questionId,
+                                'multiple_choice_answer_id' => $answerId,
+                            ],
+                            ['answer_id' => null]
+                        );
+                    }
+                } else {
+                    \Log::warning("Resposta de múltipla escolha inválida: questionId = {$questionId}, answerIds = " . print_r($answerIds, true));
                 }
             }
 

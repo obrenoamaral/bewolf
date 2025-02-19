@@ -246,10 +246,7 @@
             const multipleChoiceAnswers = {};
             document.querySelectorAll('input[name^="multiple_choice_answers"]:checked').forEach(input => {
                 const questionId = input.name.match(/\[(\d+)\]/)[1];
-                if (!multipleChoiceAnswers[questionId]) {
-                    multipleChoiceAnswers[questionId] = [];
-                }
-                multipleChoiceAnswers[questionId].push(input.value);
+                formData.append(`multiple_choice_answers[${questionId}][]`, input.value);
             });
 
             // Adiciona as respostas de múltipla escolha ao FormData

@@ -224,28 +224,26 @@
         });
 
         clientInfoForm.addEventListener('submit', function (e) {
-            e.preventDefault(); // Impede o envio tradicional do formulário
-            console.log('Formulário submetido via JavaScript'); // Log para depuração
+            e.preventDefault();
 
             const formData = new FormData(this);
 
-            // Adicionar respostas do questionário ao FormData
-            const answers = document.querySelectorAll('input[name^="answers"], input[name^="multiple_choice_answers"]');
-            answers.forEach(input => {
-                if (input.checked) {
-                    formData.append(input.name, input.value);
+            // Coleta respostas de múltipla escolha agrupadas por pergunta
+            const multipleChoiceAnswers = {};
+            document.querySelectorAll('input[name^="multiple_choice_answers"]:checked').forEach(input => {
+                const questionId = input.name.match(/\[(\d+)\]/)[1]; // Extrai o ID da pergunta
+                if (!multipleChoiceAnswers[questionId]) {
+                    multipleChoiceAnswers[questionId] = [];
                 }
+                multipleChoiceAnswers[questionId].push(input.value);
             });
 
-            // Verifica se o token CSRF está presente
-            const csrfToken = document.querySelector('meta[name="csrf-token"]');
-            if (!csrfToken) {
-                console.error('Token CSRF não encontrado.');
-                alert('Erro interno. Por favor, recarregue a página e tente novamente.');
-                return;
+            // Adiciona as respostas agrupadas ao FormData
+            for (const [questionId, answers] of Object.entries(multipleChoiceAnswers)) {
+                formData.append(`multiple_choice_answers[${questionId}]`, answers.join(','));
             }
 
-
+            // Envia os dados
             fetch('/form/submit-info', {
                 method: 'POST',
                 body: formData,
@@ -253,29 +251,18 @@
                     'X-CSRF-TOKEN': csrfToken.content
                 }
             })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(error => {
-                            throw new Error(error.message || 'Erro na requisição: ' + response.status);
-                        });
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    if (data && data.success) {
+                    if (data.success) {
                         window.location.href = '/thankyou';
-                    } else if (data && data.message) {
-                        alert(data.message);
                     } else {
-                        alert('Informações enviadas com sucesso!');
-                        window.location.href = '/thankyou';
+                        alert(data.message || 'Erro ao enviar o formulário.');
                     }
                 })
                 .catch(error => {
                     console.error('Erro:', error);
-                    alert(error.message || 'Erro ao enviar o formulário. Por favor, tente novamente.');
+                    alert('Erro ao enviar o formulário. Por favor, tente novamente.');
                 });
         });
-    });
 
 </script>

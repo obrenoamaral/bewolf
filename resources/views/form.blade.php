@@ -24,16 +24,13 @@
     <div class="max-w-4xl w-full p-8">
         <form id="questionForm">
             @csrf
-            <!-- Questões Simples -->
             <div id="questionContainer"></div>
 
-            <!-- Questões de Múltipla Escolha -->
             <div id="multipleChoiceContainer" class="hidden"></div>
 
             <div class="mt-6 flex justify-between">
                 <button type="button" id="backButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded disabled:opacity-50" disabled>Voltar</button>
-                <button type="button" id="nextButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded">Próximo</button>
-                <button type="button" id="submitButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded hidden">Enviar</button>
+                <button type="button" id="nextButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded disabled:opacity-50" disabled>Próximo</button> <button type="button" id="submitButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded hidden">Enviar</button>
             </div>
         </form>
     </div>
@@ -88,8 +85,10 @@
 
         let currentQuestionIndex = 0;
         let currentMultipleChoiceIndex = 0;
+        let currentSection = 'questions'; // 'questions' ou 'multipleChoice'
 
         function showQuestion(index) {
+            currentSection = 'questions';
             const question = questions[index];
             questionContainer.innerHTML = `
             <div class="mb-4 opacity-0 transition-opacity duration-500">
@@ -105,12 +104,16 @@
 
             const questionElement = questionContainer.querySelector('div');
             setTimeout(() => questionElement.classList.add('opacity-100'), 10);
+            questionContainer.classList.remove('hidden');
+            multipleChoiceContainer.classList.add('hidden');
+            toggleButtons();
         }
 
         function showMultipleChoiceQuestion(index) {
+            currentSection = 'multipleChoice';
             const question = multipleChoiceQuestions[index];
 
-            if (!question.answers_multiple_choice || !Array.isArray(question.answers_multiple_choice)) {
+            if (!question || !question.answers_multiple_choice || !Array.isArray(question.answers_multiple_choice)) {
                 console.error('Respostas de múltipla escolha não definidas ou inválidas:', question);
                 return;
             }
@@ -130,77 +133,80 @@
             const multipleChoiceElement = multipleChoiceContainer.querySelector('div');
             setTimeout(() => multipleChoiceElement.classList.add('opacity-100'), 10);
 
-            // Verifica se é a última questão de múltipla escolha
-            if (index === multipleChoiceQuestions.length - 1) {
-                nextButton.classList.add('hidden');
-                submitButton.classList.remove('hidden');
-            } else {
-                nextButton.classList.remove('hidden');
-                submitButton.classList.add('hidden');
-            }
+            multipleChoiceContainer.classList.remove('hidden');
+            questionContainer.classList.add('hidden');
+            toggleButtons();
+
+
         }
 
         function showNextQuestion() {
-            if (currentQuestionIndex < questions.length - 1) {
-                currentQuestionIndex++;
-                questionContainer.classList.add('opacity-0');
-                setTimeout(() => {
+            if (currentSection === 'questions') {
+                if (currentQuestionIndex < questions.length - 1) {
+                    currentQuestionIndex++;
                     showQuestion(currentQuestionIndex);
-                    questionContainer.classList.remove('opacity-0');
-                }, 500);
-            } else {
-                questionContainer.classList.add('opacity-0');
-                setTimeout(() => {
-                    multipleChoiceContainer.classList.remove('hidden');
-
-                    // Incrementa o índice ANTES de exibir a próxima pergunta de múltipla escolha
+                } else {
+                    // Vai para a primeira questão de múltipla escolha
+                    currentSection = 'multipleChoice';
+                    currentMultipleChoiceIndex = 0;
+                    showMultipleChoiceQuestion(currentMultipleChoiceIndex);
+                }
+            } else if (currentSection === 'multipleChoice') {
+                if (currentMultipleChoiceIndex < multipleChoiceQuestions.length - 1) {
                     currentMultipleChoiceIndex++;
-
-                    showMultipleChoiceQuestion(currentMultipleChoiceIndex - 1); // Passa o índice correto
-
-                    questionContainer.classList.add('hidden');
-                    multipleChoiceContainer.classList.add('opacity-0');
-                    setTimeout(() => multipleChoiceContainer.classList.remove('opacity-0'), 10);
-                }, 500);
+                    showMultipleChoiceQuestion(currentMultipleChoiceIndex);
+                } else {
+                    // Final das questões, mostra o botão de enviar
+                    questionScreen.classList.add('hidden');
+                    clientInfoScreen.classList.remove('hidden');
+                }
             }
         }
 
         function showPreviousQuestion() {
-            if (currentQuestionIndex > 0) {
-                currentQuestionIndex--;
-                questionContainer.classList.add('opacity-0');
-                setTimeout(() => {
+            if (currentSection === 'multipleChoice') {
+                if (currentMultipleChoiceIndex > 0) {
+                    currentMultipleChoiceIndex--;
+                    showMultipleChoiceQuestion(currentMultipleChoiceIndex);
+                } else {
+                    //Volta para ultima questao normal
+                    currentSection = 'questions';
+                    currentQuestionIndex = questions.length -1;
                     showQuestion(currentQuestionIndex);
-                    questionContainer.classList.remove('opacity-0');
-                }, 500);
-            } else if (currentMultipleChoiceIndex > 0) {
-                multipleChoiceContainer.classList.add('opacity-0');
-                setTimeout(() => {
-                    multipleChoiceContainer.classList.add('hidden');
-                    questionContainer.classList.remove('hidden');
+                }
+            } else if(currentSection === 'questions'){
+                if (currentQuestionIndex > 0) {
+                    currentQuestionIndex--;
                     showQuestion(currentQuestionIndex);
-                    multipleChoiceContainer.classList.remove('opacity-0');
-                }, 500);
-                currentMultipleChoiceIndex--;
+                }
             }
         }
 
-        function toggleButtons() {
-            if (currentQuestionIndex === 0 && currentMultipleChoiceIndex === 0) {
-                backButton.disabled = true;
-            } else {
-                backButton.disabled = false;
-            }
 
-            if (currentQuestionIndex < questions.length) {
+        function toggleButtons() {
+            // Botão Voltar
+            backButton.disabled = (currentSection === 'questions' && currentQuestionIndex === 0);
+
+            // Botão Próximo / Enviar
+            if (currentSection === 'questions') {
                 const currentQuestionId = questions[currentQuestionIndex].id;
                 const isAnswered = document.querySelector(`input[name="answers[${currentQuestionId}]"]:checked`);
                 nextButton.disabled = !isAnswered;
-            } else {
-                // Nova lógica para radio buttons: verifica se um radio button está marcado na pergunta atual
+                nextButton.classList.remove('hidden');
+                submitButton.classList.add('hidden');
+
+            } else if (currentSection === 'multipleChoice') {
                 const currentMultipleChoiceId = multipleChoiceQuestions[currentMultipleChoiceIndex].id;
                 const isAnswered = document.querySelector(`input[name="multiple_choice_answers[${currentMultipleChoiceId}]"]:checked`);
                 nextButton.disabled = !isAnswered;
+                if(currentMultipleChoiceIndex < multipleChoiceQuestions.length -1){
+                    nextButton.classList.remove('hidden');
+                    submitButton.classList.add('hidden');
+                } else {
+                    nextButton.classList.add('hidden');
+                    submitButton.classList.remove('hidden');
+                }
+
             }
         }
 
@@ -281,6 +287,9 @@
                     alert('Erro ao enviar o formulário. Por favor, tente novamente.');
                 });
         });
+
+        //Inicializa os botoes
+        toggleButtons();
     });
 
 </script>

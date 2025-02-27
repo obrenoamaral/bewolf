@@ -6,7 +6,7 @@
     <style>
         @page {
             size: A4;
-            margin: 10mm 5mm 10mm 5mm; /* Margens superior, direita, inferior, esquerda */
+            margin: 20mm 5mm 15mm 5mm; /* Margens superior, direita, inferior, esquerda */
         }
         body {
             font-family: sans-serif; /* Fonte mais segura para PDFs */
@@ -79,7 +79,7 @@
 
     </style>
 </head>
-<body style="margin: 10mm 5mm 10mm 5mm;">
+<body style="margin: 15mm 5mm 15mm 5mm;">
 
 <div class="container page-break" style="padding: 8pt; width: 100%; box-sizing: border-box;">
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">

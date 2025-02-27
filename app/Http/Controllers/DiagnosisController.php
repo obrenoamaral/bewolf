@@ -9,7 +9,7 @@ use App\Models\ClientAnswer;
 use App\Models\EmailContent;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
-use function Spatie\LaravelPdf\Support\pdf;
+use Spatie\LaravelPdf\Facades\Pdf; // Importe a facade correta
 
 
 class DiagnosisController extends Controller
@@ -46,6 +46,7 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
             return $diagnoses['empreendedorVencedor'];
         }
     }
+
     public function generateReport($client_id)
     {
         $clientAnswers = ClientAnswer::where('client_id', $client_id)
@@ -56,16 +57,14 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
             return response()->json(['message' => 'No reports found for this client.'], 404);
         }
 
-        $strongPoints = [];
-        $weakPoints = [];
+        $orderedPoints = [];
 
-        $reportData = $clientAnswers->map(function ($clientAnswer) use (&$strongPoints, &$weakPoints) {
-
+        foreach ($clientAnswers as $clientAnswer) {
             if (!$clientAnswer->answer || !$clientAnswer->question) {
-                return null;
+                continue;
             }
 
-            $data = [
+            $orderedPoints[] = [
                 'question' => $clientAnswer->question->question,
                 'diagnosis_title' => $clientAnswer->question->diagnosis_title,
                 'diagnosis' => $clientAnswer->answer->diagnosis,
@@ -74,19 +73,22 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
                 'strength_weakness_title' => $clientAnswer->answer->strength_weakness_title,
                 'strength_weakness' => $clientAnswer->answer->strength_weakness,
             ];
+        }
 
-            if ($clientAnswer->answer->strength_weakness === 'strong') {
-                $strongPoints[] = $data;
-            } else {
-                $weakPoints[] = $data;
+        $reportData = $clientAnswers->map(function ($clientAnswer) {
+            if (!$clientAnswer->answer || !$clientAnswer->question) {
+                return null;
             }
-
-            return $data;
+            return [
+                'question' => $clientAnswer->question->question,
+                'diagnosis_title' => $clientAnswer->question->diagnosis_title,
+                'diagnosis' => $clientAnswer->answer->diagnosis,
+                'solution' => $clientAnswer->answer->solution,
+                'answer' => $clientAnswer->answer->answer,
+            ];
         })->filter();
 
-        if ($reportData->isEmpty()) {
-            return response()->json(['message' => 'No valid reports found for this client.'], 404);
-        }
+
 
         $multipleChoiceAnswers = ClientAnswer::where('client_id', $client_id)
             ->whereHas('questionMultipleChoice')
@@ -104,21 +106,22 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
         $diagnosisResult = $this->calculateDiagnosis($totalWeight);
 
         $fileName = 'diagnostico_' . $client_id . '.pdf';
-        $pdfStorage = storage_path('app/public/' . $client_id . '.pdf');
+        $pdfStorage = storage_path('app/public/' . $fileName); // Use $fileName aqui
 
         try {
-            pdf()
-                ->view('reports.index', compact('reportData', 'totalWeight', 'diagnosisResult', 'strongPoints', 'weakPoints', 'multipleChoiceAnswers'))
-                ->save($pdfStorage);
+            Pdf::view('reports.index', compact('totalWeight', 'diagnosisResult', 'orderedPoints', 'multipleChoiceAnswers', 'reportData'))
+                ->save($pdfStorage); // Salva o PDF
 
+            // Opcional: Enviar por e-mail (descomente se quiser enviar)
             $this->sendReportByEmail($client_id, $pdfStorage);
+
+            return response()->download($pdfStorage, $fileName)->deleteFileAfterSend(true); // Retorna o PDF e o exclui depois
 
         } catch (\Exception $e) {
             \Log::error('Erro ao gerar ou enviar relatório: ' . $e->getMessage());
             return back()->with('error', 'Erro ao gerar o relatório. Tente novamente mais tarde.');
         }
 
-        return back()->with('success', 'Relatório gerado e enviado com sucesso!');
     }
 
     public function sendReportByEmail($client_id, $pdfStorage)
@@ -131,10 +134,6 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
         Mail::to($client->email)
             ->cc($fixedEmail)
             ->send(new ReportMail($client, $pdfStorage, $emailContent));
-
-        if (file_exists($pdfStorage)) {
-            unlink($pdfStorage);
-        }
     }
-
 }
+

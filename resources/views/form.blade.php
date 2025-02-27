@@ -6,6 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulário de Perguntas</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Estilos para o spinner (opcional, mas recomendado para um visual melhor) */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3498db; /* Cor do spinner */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block; /* Para ficar ao lado do texto */
+            margin-right: 5px; /* Espaço entre o spinner e o texto */
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body class="bg-no-repeat bg-cover bg-center h-screen m-auto" style="background-image: url('{{ asset('background1.webp') }}');">
 
@@ -57,6 +74,9 @@
             </div>
             <div class="mt-6">
                 <button type="submit" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded">Enviar</button>
+                <span id="loadingIndicator" class="hidden ml-2 text-gray-100">
+                    <div class="spinner"></div> Enviando...
+                </span>
             </div>
         </form>
     </div>
@@ -77,6 +97,7 @@
         const questionContainer = document.getElementById('questionContainer');
         const multipleChoiceContainer = document.getElementById('multipleChoiceContainer');
         const clientInfoForm = document.getElementById('clientInfoForm');
+        const loadingIndicator = document.getElementById('loadingIndicator'); // Elemento do indicador
 
         const questions = @json($questions);
         const multipleChoiceQuestions = @json($multipleChoiceQuestions);
@@ -251,6 +272,15 @@
         clientInfoForm.addEventListener('submit', function (e) {
             e.preventDefault();
 
+            // Mostra o indicador de carregamento
+            loadingIndicator.classList.remove('hidden');
+
+            // Desabilita o botão de envio
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed'); // Estilo de desabilitado
+
+
             const formData = new FormData(this);
 
             // Coleta respostas de questões simples
@@ -274,7 +304,13 @@
                     'X-CSRF-TOKEN': csrfToken
                 }
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        // Trata erros de rede ou HTTP (status 4xx ou 5xx)
+                        throw new Error(`Erro HTTP! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         window.location.href = '/thankyou';
@@ -285,6 +321,13 @@
                 .catch(error => {
                     console.error('Erro:', error);
                     alert('Erro ao enviar o formulário. Por favor, tente novamente.');
+                })
+                .finally(() => {
+                    // Oculta o indicador de carregamento, independentemente do resultado
+                    loadingIndicator.classList.add('hidden');
+                    // Reabilita o botão
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 });
         });
 

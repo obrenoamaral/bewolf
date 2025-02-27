@@ -19,23 +19,41 @@ class DiagnosisController extends Controller
     {
         $diagnoses = [
             'empreendedorExtintor' => [
+
                 'name' => 'Empreendedor Extintor',
+
                 'description' => 'Perfil Empreendedor em Risco Alto de Resultados Negativos, está em uma situação crítica e precisa de uma intervenção urgente nos 3 pilares fundamentais do negócio: Estratégia, Pessoas e Processos. Afinal, ainda não tem direcionamento efetivo de sua operação, e é provável que esteja enfrentando um caos operacional. Os processos são indefinidos, o fluxo de caixa pessoal e da empresa estão misturados, e há dificuldade em delegar e alinhar os resultados com a equipe.
 
+
+
 Esse cenário leva o empresário a trabalhar mais de 12 horas por dia, com baixo tempo de qualidade para si e para sua família, além da incapacidade de se ausentar para tirar férias. O nível de estresse é elevado, com uma equipe desmotivada e uma cultura organizacional reativa, onde todos os dias surgem crises e problemas inesperados. O time, dependente de decisões constantes do empresário, vê tudo como urgente, e ele acaba sendo consumido pela necessidade de "apagar incêndios" em vez de focar no crescimento e na melhoria contínua do negócio.'
+
             ],
+
             'empreendedorSobrecarregado' => [
+
                 'name' => 'Empreendedor Sobrecarregado',
+
                 'description' => 'Perfil Empreendedor Tradicional com Baixa Abertura para Inovação - Este perfil indica um empreendedor mais Tradicional, com um ambiente de baixo incentivo à inovação e uma grande centralização das atividades. Frequentemente, o time não consegue resolver questões importantes sem a presença direta da liderança, o que resulta em uma baixa autonomia e dependência dos poucos funcionários capacitados. Os processos da empresa ainda são pouco organizados, o que compromete a eficiência operacional.
 
+
+
 É crucial que este empresário inicie uma estruturação estratégica mais robusta, formalizando 100% dos processos da empresa e estabelecendo ciclos regulares de acompanhamento de metas e indicadores. Além disso, é essencial implementar feedbacks constantes, realizar avaliações institucionais, como pesquisas 360° e de clima organizacional, e trabalhar para reduzir a "donodependência" — ou seja, a excessiva dependência dos sócios e líderes para a execução das tarefas cotidianas.'
+
             ],
+
             'empreendedorVencedor' => [
+
                 'name' => 'Empreendedor Mentalmente Vencedor',
+
                 'description' => 'Perfil Empreendedor com Mentalidade Vencedora - Este perfil descreve um empreendedor com uma mentalidade vencedora, que compreende a importância de inovar constantemente e de buscar sempre novos conhecimentos. Ele entende que o desenvolvimento e a estruturação do negócio são processos contínuos, nos quais as estratégias e processos devem ser constantemente revisados e ajustados. Além disso, sabe que o desenvolvimento do time é essencial, e que todos devem estar alinhados com a visão, missão e valores da empresa.
 
+
+
 Os principais desafios enfrentados por esse empreendedor envolvem a validação da cultura organizacional, o crescimento e a expansão da estrutura do negócio, e o alinhamento constante entre estratégia, pessoas e processos. O foco deste empreendedor deve ser reduzir desperdícios de produtividade e aumentar o engajamento do time, garantindo que as metas sejam claras e bem definidas para todos.'
+
             ],
+
         ];
 
         if ($totalWeight <= 68) {
@@ -53,8 +71,15 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
             ->with(['answer', 'question'])
             ->get();
 
-        if ($clientAnswers->isEmpty()) {
-            return response()->json(['message' => 'No reports found for this client.'], 404);
+
+        $multipleChoiceAnswers = ClientAnswer::where('client_id', $client_id)
+            ->whereHas('questionMultipleChoice')
+            ->with(['questionMultipleChoice', 'answerMultipleChoice'])
+            ->get();
+
+
+        if ($clientAnswers->isEmpty() && $multipleChoiceAnswers->isEmpty()) {
+            return response()->json(['message' => 'No answers found for this client.'], 404);
         }
 
         $orderedPoints = [];
@@ -89,19 +114,20 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
         })->filter();
 
 
+        // Calcular o peso total, incluindo as respostas de múltipla escolha
+        $totalWeight = $clientAnswers->sum(function ($clientAnswer) {
+            return $clientAnswer->answer ? $clientAnswer->answer->weight : 0;
+        });
 
-        $multipleChoiceAnswers = ClientAnswer::where('client_id', $client_id)
-            ->whereHas('questionMultipleChoice')
-            ->with(['questionMultipleChoice', 'answerMultipleChoice'])
-            ->get();
+        //Soma o peso das multiplas escolhas
+        $totalWeight += $multipleChoiceAnswers->sum(function ($multipleChoiceAnswer) {
+            return $multipleChoiceAnswer->answerMultipleChoice ? $multipleChoiceAnswer->answerMultipleChoice->weight : 0;
+        });
 
         if ($multipleChoiceAnswers->isEmpty()) {
             \Log::warning('No multiple choice answers found for client: ' . $client_id);
         }
 
-        $totalWeight = $clientAnswers->sum(function ($clientAnswer) {
-            return $clientAnswer->answer ? $clientAnswer->answer->weight : 0;
-        });
 
         $diagnosisResult = $this->calculateDiagnosis($totalWeight);
 
@@ -136,4 +162,3 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
             ->send(new ReportMail($client, $pdfStorage, $emailContent));
     }
 }
-

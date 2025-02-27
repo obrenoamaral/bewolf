@@ -194,7 +194,7 @@
             acesse os links abaixo:
         </p>
         <div style="margin-top: 1rem; ">
-            <p style="font-weight: bold;">Indique Empresários para participar da Reunião Estratégica GRATUITA</p>
+            <p style="font-weight: bold;" class="text-center">Indique Empresários para participar da Reunião Estratégica GRATUITA</p>
         </div>
         <p style="margin-top: 1rem; color: #374151;" class="text-center">Ficaremos sempre à sua disposição.</p>
         <p style="margin-top: 0.5rem; color: #111827; font-weight: bold;" class="text-center">BeWolf Consultoria Empresarial</p>

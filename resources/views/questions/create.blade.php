@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="max-w-5xl mx-auto rounded-xl pt-10">
+    <div class="max-w-5xl mx-auto rounded-xl pt-10 px-4 sm:px-6">
         <a href="{{ route('questions.index') }}" class="border border-gray-400 text-gray-400 px-4 py-2 rounded-lg cursor-pointer">
             <i class="pi pi-arrow-left"></i>
         </a>
@@ -19,29 +19,28 @@
 
         <form method="POST" action="{{ route('questions.store') }}">
             @csrf
-            <!-- Campo da Pergunta -->
             <label class="block text-gray-100 font-medium">Pergunta:</label>
-            <input name="question" type="text" required class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+            <input name="question" type="text" required class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 break-words"/>
 
             <label class="block text-gray-100 font-medium">Título do relatório</label>
-            <input name="diagnosis_title" type="text" required class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+            <input name="diagnosis_title" type="text" required class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 break-words"/>
 
             <div id="answers-container">
                 <div class="answer-group mt-4 p-4 border border-gray-600 rounded-lg">
                     <label class="block text-gray-100 font-medium">Resposta 1:</label>
-                    <input name="answers[0][answer]" type="text" required placeholder="Resposta" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+                    <input name="answers[0][answer]" type="text" required placeholder="Resposta" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 break-words"/>
 
                     <label class="block text-gray-100 font-medium mt-2">Peso:</label>
                     <input name="answers[0][weight]" type="number" required placeholder="Peso" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
 
                     <label class="block text-gray-100 font-medium mt-2">Diagnóstico:</label>
-                    <textarea name="answers[0][diagnosis]" required placeholder="Diagnóstico" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 resize-y"></textarea>
+                    <textarea name="answers[0][diagnosis]" required placeholder="Diagnóstico" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 resize-y break-words"></textarea>
 
                     <label class="block text-gray-100 font-medium mt-2">Solução:</label>
-                    <textarea name="answers[0][solution]" required placeholder="Solução" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 resize-y"></textarea>
+                    <textarea name="answers[0][solution]" required placeholder="Solução" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 resize-y break-words"></textarea>
 
                     <label class="block text-gray-100 font-medium mt-2">Título do Ponto Forte/Fraco:</label>
-                    <input name="answers[0][strength_weakness_title]" type="text" placeholder="Título" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100"/>
+                    <input name="answers[0][strength_weakness_title]" type="text" placeholder="Título" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 break-words"/>
 
                     <label class="block text-gray-100 font-medium mt-2">Classificação:</label>
                     <select name="answers[0][strength_weakness]" class="w-full p-2 rounded-lg mt-1 bg-dark text-gray-100">
@@ -52,12 +51,10 @@
                 </div>
             </div>
 
-            <!-- Botão para Adicionar Nova Resposta -->
-            <button type="button" id="add-answer" class="mt-3 text-blue-500 hover:text-blue-700 text-sm">
+            <button type="button" id="add-answer" class="mt-3 text-blue-500 hover:text-blue-700 text-sm w-full sm:w-auto">
                 + Adicionar Outra Resposta
             </button>
 
-            <!-- Botão de Envio -->
             <button type="submit" class="w-full mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold p-2 rounded-lg mb-6">
                 Cadastrar Pergunta
             </button>

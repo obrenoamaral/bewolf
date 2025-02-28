@@ -1,19 +1,19 @@
 <x-app-layout>
     <div class="py-10 max-w-5xl mx-auto">
-        <div class="mx-auto sm:px-6 lg:px-8 flex gap-6">
-            <div class="border border-gray-600 w-80 p-10 rounded-lg">
+        <div class="mx-auto sm:px-6 lg:px-8 flex flex-wrap gap-6 justify-center">
+            <div class="border border-gray-600 flex-1 p-10 rounded-lg min-w-[280px]">
                 <h3 class="text-center text-gray-100 py-2">Total de Clientes</h3>
                 <p class="text-center text-gray-100 text-4xl">
                     {{ $clients }}
                 </p>
             </div>
-            <div class="border border-gray-600 w-80 p-10 rounded-lg">
+            <div class="border border-gray-600 flex-1 p-10 rounded-lg min-w-[280px]">
                 <h3 class="text-center text-gray-100 py-2">Total de Formulários Enviados</h3>
                 <p class="text-center text-gray-100 text-4xl">
                     {{ $forms }}
                 </p>
             </div>
-            <div class="border border-gray-600 w-80 p-10 rounded-lg">
+            <div class="border border-gray-600 flex-1 p-10 rounded-lg min-w-[280px]">
                 <h3 class="text-center text-gray-100 py-2">Perguntas Cadastradas</h3>
                 <p class="text-center text-gray-100 text-4xl">
                     {{ $questions }}

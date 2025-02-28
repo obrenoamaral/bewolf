@@ -1,8 +1,8 @@
 <x-app-layout>
     <div class="p-10 bg-dark">
-        <div class="flex justify-between my-4 container mx-auto max-w-5xl">
-            <h2 class="text-2xl font-bold text-gray-100 mb-4">Perguntas Cadastradas</h2>
-            <a href="{{ route('questions.create') }}" class="border border-gray-600 text-gray-100 p-4 rounded-lg hover:bg-[#262626]">
+        <div class="flex flex-wrap justify-between my-4 container mx-auto max-w-5xl">
+            <h2 class="text-2xl font-bold text-gray-100 mb-4 w-full md:w-auto">Perguntas Cadastradas</h2>
+            <a href="{{ route('questions.create') }}" class="border border-gray-600 text-gray-100 p-4 rounded-lg hover:bg-[#262626] w-full md:w-auto text-center">
                 Nova pergunta
             </a>
         </div>
@@ -10,51 +10,53 @@
         @if ($questions->isEmpty())
             <div class="text-gray-600 max-w-5xl mx-auto">Nenhuma pergunta cadastrada.</div>
         @else
-            <table class="container max-w-5xl mx-auto overflow-hidden">
-                <thead>
-                <tr class="text-gray-100">
-                    <th class="p-2 text-left text-gray-100">Pergunta</th>
-                    <th class="p-2 text-left">Respostas</th>
-                    <th class="p-2 text-center w-40">Ações</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach ($questions as $question)
-                    <tr class="border-b border-b-gray-600 hover:bg-[#262626]">
-                        <td class="border-b border-b-gray-600 p-2 font-medium rounded-bl-lg text-gray-100">{{ $question->question }}</td>
-                        <td class="border-b border-b-gray-600 p-2">
-                            <ul>
-                                @foreach ($question->answers as $answer)
-                                    <li class="text-sm text-gray-100 flex justify-between">
+            <div class="container max-w-5xl mx-auto overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                    <tr class="text-gray-100">
+                        <th class="p-2 text-left text-gray-100">Pergunta</th>
+                        <th class="p-2 text-left">Respostas</th>
+                        <th class="p-2 text-center w-40">Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach ($questions as $question)
+                        <tr class="border-b border-b-gray-600 hover:bg-[#262626]">
+                            <td class="border-b border-b-gray-600 p-2 font-medium rounded-bl-lg text-gray-100 break-words">{{ $question->question }}</td>
+                            <td class="border-b border-b-gray-600 p-2 break-words">
+                                <ul>
+                                    @foreach ($question->answers as $answer)
+                                        <li class="text-sm text-gray-100 flex justify-between">
                                         <span>
                                             <strong>{{ $answer->answer }}</strong> (Peso: {{ $answer->weight }})
                                             <br><span class="text-xs text-gray-200">{{ $answer->diagnosis }} → {{ $answer->solution }}</span>
                                         </span>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </td>
-                        <td class="p-2 text-center flex gap-2 w-40">
-                            <button data-question="{{ json_encode($question) }}" class="edit-button border border-blue-400 text-white px-6 py-1 rounded-lg cursor-pointer">
-                                <i class="pi pi-file-edit" style="color: #51A2FF"></i>
-                            </button>
-                            <form action="{{ route('questions.destroy', $question->id) }}" method="POST" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="border border-red-400 text-white px-6 py-1 rounded-lg cursor-pointer">
-                                    <i class="pi pi-trash" style="color: #FF6467"></i>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </td>
+                            <td class="p-2 text-center flex gap-2 w-40">
+                                <button data-question="{{ json_encode($question) }}" class="edit-button border border-blue-400 text-white px-6 py-1 rounded-lg cursor-pointer">
+                                    <i class="pi pi-file-edit" style="color: #51A2FF"></i>
                                 </button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
-                </tbody>
-            </table>
+                                <form action="{{ route('questions.destroy', $question->id) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="border border-red-400 text-white px-6 py-1 rounded-lg cursor-pointer">
+                                        <i class="pi pi-trash" style="color: #FF6467"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
         @endif
     </div>
 
-    <div id="editModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
-        <div class="bg-[#1E1E1E] p-6 rounded-lg shadow-lg max-w-4xl text-gray-100">
+    <div id="editModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden overflow-y-auto">
+        <div class="bg-[#1E1E1E] p-6 rounded-lg shadow-lg max-w-4xl w-full mx-4 text-gray-100">
             <h2 class="text-xl font-bold mb-4">Editar Pergunta</h2>
             <form id="editForm" method="POST">
                 @csrf

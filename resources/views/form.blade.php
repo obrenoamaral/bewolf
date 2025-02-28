@@ -6,79 +6,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulário de Perguntas</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Estilos para o spinner (opcional, mas recomendado para um visual melhor) */
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Estilos para o spinner */
         .spinner {
             border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #3498db; /* Cor do spinner */
+            border-left-color: #3498db;
             border-radius: 50%;
             width: 20px;
             height: 20px;
             animation: spin 1s linear infinite;
-            display: inline-block; /* Para ficar ao lado do texto */
-            margin-right: 5px; /* Espaço entre o spinner e o texto */
+            display: inline-block;
+            margin-right: 5px;
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Estilos para os inputs de radio */
+        .form-radio {
+            @apply h-4 w-4 text-blue-500 border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-200;
         }
     </style>
 </head>
+
 <body class="bg-no-repeat bg-cover bg-center h-screen m-auto" style="background-image: url('{{ asset('background1.webp') }}');">
 
-<div class="bg-black opacity-70 h-screen flex items-center justify-center" id="introScreen">
-    <div class="max-w-4xl w-full p-8 text-start">
-        <h1 class="text-2xl text-gray-100 font-bold mb-6 uppercase">Seja muito bem-vindo(a) ao Diagnóstico Empresarial BeWolf</h1>
-        <p class="text-gray-100 mb-6">Quer ter uma visão clara da situação atual da sua empresa e identificar áreas de melhoria?</p>
-        <p class="text-gray-100 mb-6">Este diagnóstico gratuito, com 35 perguntas, foi desenvolvido para te ajudar a obter um panorama completo do seu negócio. Responda com atenção e receba um relatório personalizado com recomendações estratégicas.</p>
-        <p class="text-gray-100 mb-6">Tempo estimado para preenchimento: 5 minutos</p>
-        <p class="text-gray-100 mb-6">Este formulário exige concentração. Certifique-se de estar focado antes de começar. Quando estiver preparado, clique em "Começar".</p>
-        <button id="startButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded">Começar</button>
+<div class="bg-black opacity-80 h-screen flex items-center justify-center" id="introScreen">
+    <div class="max-w-4xl w-full p-8 text-center md:text-left">
+        <h1 class="text-2xl md:text-2xl text-gray-100 font-bold mb-6 uppercase">Seja muito bem-vindo(a) ao Diagnóstico Empresarial BeWolf</h1>
+        <p class="text-base md:text-md text-gray-100 mb-6">Quer ter uma visão clara da situação atual da sua empresa e identificar áreas de melhoria?</p>
+        <p class="text-base md:text-md text-gray-100 mb-6">Este diagnóstico gratuito, com 35 perguntas, foi desenvolvido para te ajudar a obter um panorama completo do seu negócio. Responda com atenção e receba um relatório personalizado com recomendações estratégicas.</p>
+        <p class="text-base md:text-md text-gray-100 mb-6">Tempo estimado para preenchimento: 5 minutos</p>
+        <p class="text-base md:text-md text-gray-100 mb-6">Este formulário exige concentração. Certifique-se de estar focado antes de começar. Quando estiver preparado, clique em "Começar".</p>
+        <button id="startButton" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition duration-300">Começar</button>
     </div>
 </div>
 
-<div class="bg-black opacity-70 h-screen flex items-center justify-center hidden transition-opacity" id="questionScreen">
+<div class="bg-black opacity-80 h-screen flex items-center justify-center hidden transition-opacity duration-500" id="questionScreen">
     <div class="max-w-4xl w-full p-8">
         <form id="questionForm">
             @csrf
             <div id="questionContainer"></div>
-
             <div id="multipleChoiceContainer" class="hidden"></div>
 
             <div class="mt-6 flex justify-between">
                 <button type="button" id="backButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded disabled:opacity-50" disabled>Voltar</button>
-                <button type="button" id="nextButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded disabled:opacity-50" disabled>Próximo</button> <button type="button" id="submitButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded hidden">Enviar</button>
+                <button type="button" id="nextButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded disabled:opacity-50" disabled>Próximo</button>
+                <button type="button" id="submitButton" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded hidden">Enviar</button>
             </div>
         </form>
     </div>
 </div>
-<div class="bg-black opacity-70 h-screen flex items-center justify-center hidden" id="clientInfoScreen">
+
+<div class="bg-black opacity-80 h-screen flex items-center justify-center hidden transition-opacity duration-500" id="clientInfoScreen">
     <div class="max-w-4xl w-full p-8">
-        <form id="clientInfoForm" >
-            @csrf
-            <div class="mb-4">
-                <label for="name" class="block font-medium text-gray-100">Nome</label>
-                <input type="text" name="name" id="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-            </div>
-            <div class="mb-4">
-                <label for="company" class="block font-medium text-gray-100">Empresa</label>
-                <input type="text" name="company" id="company" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-            </div>
-            <div class="mb-4">
-                <label for="email" class="block font-medium text-gray-100">Email</label>
-                <input type="email" name="email" id="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-            </div>
-            <div class="mb-4">
-                <label for="phone" class="block font-medium text-gray-100">Telefone</label>
-                <input type="text" name="phone" id="phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-            </div>
-            <div class="mt-6">
-                <button type="submit" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded">Enviar</button>
-                <span id="loadingIndicator" class="hidden ml-2 text-gray-100">
-                    <div class="spinner"></div> Enviando...
-                </span>
-            </div>
-        </form>
+        <div class="p-6 rounded-lg">
+            <form id="clientInfoForm">
+                @csrf
+                <div class="mb-4">
+                    <label for="name" class="block font-medium text-gray-100 text-sm">Nome</label>
+                    <input type="text" name="name" id="name" class="mt-1 p-2 block w-full rounded-md border border-gray-300 shadow-sm bg-transparent text-gray-100 text-sm" required>
+                </div>
+                <div class="mb-4">
+                    <label for="company" class="block font-medium text-gray-100 text-sm">Empresa</label>
+                    <input type="text" name="company" id="company" class="mt-1 p-2 block w-full rounded-md border border-gray-300 shadow-sm bg-transparent text-gray-100 text-sm" required>
+                </div>
+                <div class="mb-4">
+                    <label for="email" class="block font-medium text-gray-100 text-sm">Email</label>
+                    <input type="email" name="email" id="email" class="mt-1 p-2 block w-full rounded-md border border-gray-300 shadow-sm bg-transparent text-gray-100 text-sm" required>
+                </div>
+                <div class="mb-4">
+                    <label for="phone" class="block font-medium text-gray-100 text-sm">Telefone</label>
+                    <input type="text" name="phone" id="phone" class="mt-1 p-2 block w-full rounded-md border border-gray-300 shadow-sm bg-transparent text-gray-100 text-sm" required>
+                </div>
+                <div class="mt-6">
+                    <button type="submit" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded">Enviar</button>
+                    <span id="loadingIndicator" class="hidden ml-2 text-gray-100">
+              <div class="spinner"></div> Enviando...
+            </span>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

@@ -152,19 +152,21 @@
             </thead>
             <tbody>
             @foreach ($orderedPoints as $point)
-                <tr style="border: 1pt solid #d1d5db;">
-                    @if ($point['strength_weakness'] === 'strong')
-                        <td style="padding: 0.5rem; border: 1pt solid #d1d5db;">
-                            <strong style="font-weight: bold;">{{ $point['strength_weakness_title'] }}</strong>
-                        </td>
-                        <td style="padding: 0.5rem; border: 1pt solid #d1d5db;"></td> {{-- Célula vazia para pontos fracos --}}
-                    @else
-                        <td style="padding: 0.5rem; border: 1pt solid #d1d5db;"></td> {{-- Célula vazia para pontos fortes --}}
-                        <td style="padding: 0.5rem; border: 1pt solid #d1d5db;">
-                            <strong style="font-weight: bold;">{{ $point['strength_weakness_title'] }}</strong>
-                        </td>
-                    @endif
-                </tr>
+                @if ($point['strength_weakness_title'] !== '' && $point['strength_weakness'] !== '')
+                    <tr style="border: 1pt solid #d1d5db;">
+                        @if ($point['strength_weakness'] === 'strong')
+                            <td style="padding: 0.5rem; border: 1pt solid #d1d5db;">
+                                <strong style="font-weight: bold;">{{ $point['strength_weakness_title'] }}</strong>
+                            </td>
+                            <td style="padding: 0.5rem; border: 1pt solid #d1d5db;"></td>
+                        @else
+                            <td style="padding: 0.5rem; border: 1pt solid #d1d5db;"></td>
+                            <td style="padding: 0.5rem; border: 1pt solid #d1d5db;">
+                                <strong style="font-weight: bold;">{{ $point['strength_weakness_title'] }}</strong>
+                            </td>
+                        @endif
+                    </tr>
+                @endif
             @endforeach
             </tbody>
         </table>

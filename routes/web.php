@@ -55,6 +55,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Enviar relatório por e-mail
     Route::post('/send-report/{client_id}', [DiagnosisController::class, 'sendReportByEmail']);
+    Route::get('/report/preview/{client_id}', [DiagnosisController::class, 'previewReport']);
 
     // Email (conteúdo de e-mail)
     Route::prefix('email')->group(function () {

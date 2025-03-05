@@ -161,4 +161,87 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
             ->cc($fixedEmail)
             ->send(new ReportMail($client, $pdfStorage, $emailContent));
     }
+
+    public function previewReport($client_id)
+    {
+        try {
+            $clientAnswers = ClientAnswer::where('client_id', $client_id)
+                ->with(['answer.question']) // Eager loading otimizado
+                ->get();
+
+            $multipleChoiceAnswers = ClientAnswer::where('client_id', $client_id)
+                ->whereHas('questionMultipleChoice')
+                ->with(['questionMultipleChoice', 'answerMultipleChoice'])
+                ->get();
+
+
+            if ($clientAnswers->isEmpty() && $multipleChoiceAnswers->isEmpty()) {
+                abort(404, 'No answers found for this client.');
+            }
+
+            $orderedPoints = [];
+
+            // Respostas "normais" (sem alterações)
+            foreach ($clientAnswers as $clientAnswer) {
+                if ($clientAnswer->answer && $clientAnswer->answer->question) {
+                    $orderedPoints[] = [
+                        'question' => $clientAnswer->answer->question->question,
+                        'diagnosis_title' => $clientAnswer->answer->question->diagnosis_title,
+                        'diagnosis' => $clientAnswer->answer->diagnosis,
+                        'solution' => $clientAnswer->answer->solution,
+                        'answer' => $clientAnswer->answer->answer,
+                        'strength_weakness_title' => $clientAnswer->answer->strength_weakness_title,
+                        'strength_weakness' => $clientAnswer->answer->strength_weakness,
+                    ];
+                }
+            }
+
+            // Respostas de múltipla escolha (AJUSTADO)
+            foreach ($multipleChoiceAnswers as $multipleChoiceAnswer) {
+                if ($multipleChoiceAnswer->questionMultipleChoice && $multipleChoiceAnswer->answerMultipleChoice) {
+                    $orderedPoints[] = [
+                        'question' => $multipleChoiceAnswer->questionMultipleChoice->question_title, // Usar question_title
+                        'answer' => $multipleChoiceAnswer->answerMultipleChoice->answer,  // Usar answer
+                        'diagnosis_title' => $multipleChoiceAnswer->questionMultipleChoice->solution_title, //Pega o solution title da question
+                        'diagnosis' => $multipleChoiceAnswer->answerMultipleChoice->diagnosis, //Pega o diagnosis da answer
+                        'solution' => '',  // Não tem
+                        'strength_weakness_title' => '', // Não tem
+                        'strength_weakness' => '', // Não tem
+                    ];
+                }
+            }
+
+
+            $reportData = $clientAnswers->map(function ($clientAnswer) {
+                if ($clientAnswer->answer && $clientAnswer->answer->question) {
+                    return [
+                        'question' => $clientAnswer->answer->question->question,
+                        'diagnosis_title' => $clientAnswer->answer->question->diagnosis_title,
+                        'diagnosis' => $clientAnswer->answer->diagnosis,
+                        'solution' => $clientAnswer->answer->solution,
+                        'answer' => $clientAnswer->answer->answer,
+                    ];
+                }
+                return null;
+            })->filter();
+
+
+            $totalWeight = $clientAnswers->sum(function ($clientAnswer) {
+                return $clientAnswer->answer ? $clientAnswer->answer->weight : 0;
+            });
+
+            $totalWeight += $multipleChoiceAnswers->sum(function ($multipleChoiceAnswer) {
+                return $multipleChoiceAnswer->answerMultipleChoice ? $multipleChoiceAnswer->answerMultipleChoice->weight : 0;
+            });
+
+            $diagnosisResult = $this->calculateDiagnosis($totalWeight);
+            $client = Client::findOrFail($client_id); // Buscar o cliente
+
+            return view('reports.index', compact('totalWeight', 'diagnosisResult', 'orderedPoints', 'multipleChoiceAnswers', 'reportData', 'client'));
+
+        } catch (\Exception $e) {
+            \Log::error("Erro ao pré-visualizar relatório para o cliente $client_id: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            return back()->with('error', 'Erro ao pré-visualizar o relatório. Verifique os logs para mais detalhes.');
+        }
+    }
 }

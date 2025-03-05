@@ -94,7 +94,7 @@
 </div>
 
 <main class="container" >
-    <section class="table-section ">
+    <section class="table-section">
         <div style="background-color: black; color: white; text-align: center; margin-top: 1.5rem; border-top-left-radius: 0.25rem; border-top-right-radius: 0.25rem;">
             <h2 style="font-size: 1.125rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 1.25rem;">MAPEAMENTO DE DIAGNÓSTICO EMPRESARIAL</h2>
         </div>
@@ -103,8 +103,15 @@
             @foreach($orderedPoints as $data)
                 <tr style="border: 1pt solid black;">
                     <td style="padding: 0.5rem; width: 66.666667%;">{{ $data['question'] }}</td>
-                    <td style="padding: 0.5rem; width: 33.333333%; background-color: #4b5563; color: white; text-align: center;">{{ $data['answer'] }}</td>
-                </tr>
+                    <td style="padding: 0.5rem; width: 33.333333%;
+                    @if(!empty($data['answer']))
+                        background-color: #4b5563; color: white;
+                    @else
+                        background-color: #f2f2f2; /* Ou qualquer outra cor */
+                    @endif
+                    text-align: center;">
+                        {{ $data['answer'] ?: 'N/A' }}
+                    </td>
             @endforeach
             </tbody>
         </table>
@@ -167,14 +174,14 @@
         <h3 style="font-weight: bold; text-align: center; margin-top: 1.25rem; margin-bottom: 1.25rem;">ANÁLISES GERAIS DA EMPRESA E EMPREENDEDOR</h3>
         @if ($multipleChoiceAnswers->isNotEmpty())
             @foreach ($multipleChoiceAnswers as $answer)
-                <p style="font-weight: bold;">{{ $answer->questionMultipleChoice->question_title }}</p>
-                <p> {{ $answer->answerMultipleChoice->answer }}</p>
+                <p style="font-weight: bold;">{{ $answer->questionMultipleChoice->solution_title }}</p>
+                <p> {{ $answer->answerMultipleChoice->diagnosis }}</p>
             @endforeach
         @endif
     </section>
 
     <section class="diagnosis-details page-break">
-        <h1 style="margin-top: 2rem; font-size: 1.125rem; font-weight: bold; text-align: center;">Detalhamento do Diagnóstico</h1>
+        <h1 style="margin-top: 2rem; font-size: 1.125rem; font-weight: bold; text-align: center;">DETALHAMENTO DO DIAGNÓSTICO</h1>
         @foreach($orderedPoints as $data)
             <div style="margin-top: 1.5rem; padding: 1rem;">
                 <h2 style="font-size: 1rem; font-weight: 600;">{{ $data['diagnosis_title'] }}</h2>

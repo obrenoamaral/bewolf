@@ -182,14 +182,16 @@
 
     <section class="diagnosis-details page-break">
         <h1 style="margin-top: 2rem; font-size: 1.125rem; font-weight: bold; text-align: center;">DETALHAMENTO DO DIAGNÓSTICO</h1>
+        <?php $questionCounter = 1; ?>
         @foreach($orderedPoints as $data)
             <div style="margin-top: 1.5rem; padding: 1rem;">
-                <h2 style="font-size: 1rem; font-weight: 600;">{{ $data['diagnosis_title'] }}</h2>
+                <h2 style="font-size: 1rem; font-weight: 600;">{{ $questionCounter }}. {{ $data['diagnosis_title'] }}</h2>
                 <p style="margin-top: 0.5rem;"><span style="font-weight: bold;">Diagnóstico:</span></p>
                 <p style="word-wrap: break-word;">{{ $data['diagnosis'] }}</p>
                 <p style="margin-top: 0.5rem;"><span style="font-weight: bold;">Solução:</span></p>
                 <p style="word-wrap: break-word;">{{ $data['solution'] }}</p>
             </div>
+                <?php $questionCounter++; ?>
         @endforeach
     </section>
 </main>

@@ -68,9 +68,8 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
     public function generateReport($client_id)
     {
         $clientAnswers = ClientAnswer::where('client_id', $client_id)
-            ->with(['answer', 'question'])
+            ->with(['answer.question']) // Eager loading otimizado
             ->get();
-
 
         $multipleChoiceAnswers = ClientAnswer::where('client_id', $client_id)
             ->whereHas('questionMultipleChoice')
@@ -79,57 +78,66 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
 
 
         if ($clientAnswers->isEmpty() && $multipleChoiceAnswers->isEmpty()) {
-            return response()->json(['message' => 'No answers found for this client.'], 404);
+            abort(404, 'No answers found for this client.');
         }
 
         $orderedPoints = [];
 
+        // Respostas "normais" (sem alterações)
         foreach ($clientAnswers as $clientAnswer) {
-            if (!$clientAnswer->answer || !$clientAnswer->question) {
-                continue;
+            if ($clientAnswer->answer && $clientAnswer->answer->question) {
+                $orderedPoints[] = [
+                    'question' => $clientAnswer->answer->question->question,
+                    'diagnosis_title' => $clientAnswer->answer->question->diagnosis_title,
+                    'diagnosis' => $clientAnswer->answer->diagnosis,
+                    'solution' => $clientAnswer->answer->solution,
+                    'answer' => $clientAnswer->answer->answer,
+                    'strength_weakness_title' => $clientAnswer->answer->strength_weakness_title,
+                    'strength_weakness' => $clientAnswer->answer->strength_weakness,
+                ];
             }
-
-            $orderedPoints[] = [
-                'question' => $clientAnswer->question->question,
-                'diagnosis_title' => $clientAnswer->question->diagnosis_title,
-                'diagnosis' => $clientAnswer->answer->diagnosis,
-                'solution' => $clientAnswer->answer->solution,
-                'answer' => $clientAnswer->answer->answer,
-                'strength_weakness_title' => $clientAnswer->answer->strength_weakness_title,
-                'strength_weakness' => $clientAnswer->answer->strength_weakness,
-            ];
         }
 
-        $reportData = $clientAnswers->map(function ($clientAnswer) {
-            if (!$clientAnswer->answer || !$clientAnswer->question) {
-                return null;
+        // Respostas de múltipla escolha (AJUSTADO)
+        foreach ($multipleChoiceAnswers as $multipleChoiceAnswer) {
+            if ($multipleChoiceAnswer->questionMultipleChoice && $multipleChoiceAnswer->answerMultipleChoice) {
+                $orderedPoints[] = [
+                    'question' => $multipleChoiceAnswer->questionMultipleChoice->question_title, // Usar question_title
+                    'answer' => $multipleChoiceAnswer->answerMultipleChoice->answer,  // Usar answer
+                    'diagnosis_title' => $multipleChoiceAnswer->questionMultipleChoice->solution_title, //Pega o solution title da question
+                    'diagnosis' => $multipleChoiceAnswer->answerMultipleChoice->diagnosis, //Pega o diagnosis da answer
+                    'solution' => '',  // Não tem
+                    'strength_weakness_title' => '', // Não tem
+                    'strength_weakness' => '', // Não tem
+                ];
             }
-            return [
-                'question' => $clientAnswer->question->question,
-                'diagnosis_title' => $clientAnswer->question->diagnosis_title,
-                'diagnosis' => $clientAnswer->answer->diagnosis,
-                'solution' => $clientAnswer->answer->solution,
-                'answer' => $clientAnswer->answer->answer,
-            ];
+        }
+
+
+        $reportData = $clientAnswers->map(function ($clientAnswer) {
+            if ($clientAnswer->answer && $clientAnswer->answer->question) {
+                return [
+                    'question' => $clientAnswer->answer->question->question,
+                    'diagnosis_title' => $clientAnswer->answer->question->diagnosis_title,
+                    'diagnosis' => $clientAnswer->answer->diagnosis,
+                    'solution' => $clientAnswer->answer->solution,
+                    'answer' => $clientAnswer->answer->answer,
+                ];
+            }
+            return null;
         })->filter();
 
 
-        // Calcular o peso total, incluindo as respostas de múltipla escolha
         $totalWeight = $clientAnswers->sum(function ($clientAnswer) {
             return $clientAnswer->answer ? $clientAnswer->answer->weight : 0;
         });
 
-        //Soma o peso das multiplas escolhas
         $totalWeight += $multipleChoiceAnswers->sum(function ($multipleChoiceAnswer) {
             return $multipleChoiceAnswer->answerMultipleChoice ? $multipleChoiceAnswer->answerMultipleChoice->weight : 0;
         });
 
-        if ($multipleChoiceAnswers->isEmpty()) {
-            \Log::warning('No multiple choice answers found for client: ' . $client_id);
-        }
-
-
         $diagnosisResult = $this->calculateDiagnosis($totalWeight);
+        $client = Client::findOrFail($client_id);
 
         $fileName = 'diagnostico_' . $client_id . '.pdf';
         $pdfStorage = storage_path('app/public/' . $fileName); // Use $fileName aqui

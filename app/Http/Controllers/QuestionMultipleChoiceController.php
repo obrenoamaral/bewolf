@@ -22,7 +22,6 @@ class QuestionMultipleChoiceController extends Controller
                 'solution_title' => 'required|string|max:255',
                 'answers' => 'required|array|min:1',
                 'answers.*.answer' => 'required|string|max:255',
-                'answers.*.weight' => 'required|integer',
                 'answers.*.diagnosis' => 'required|string',
             ]);
 
@@ -35,7 +34,6 @@ class QuestionMultipleChoiceController extends Controller
                 AnswersMultipleChoice::create([
                     'question_multiple_choice_id' => $question->id,
                     'answer' => $answer['answer'],
-                    'weight' => $answer['weight'],
                     'diagnosis' => $answer['diagnosis'],
                 ]);
             }
@@ -55,7 +53,6 @@ class QuestionMultipleChoiceController extends Controller
                 'answers' => 'required|array',
                 'answers.*.answer' => 'required|string',
                 'answers.*.diagnosis' => 'nullable|string',
-                'answers.*.weight' => 'required|integer',
             ]);
 
             $question = QuestionMultipleChoice::findOrFail($id);
@@ -71,7 +68,6 @@ class QuestionMultipleChoiceController extends Controller
                 $question->answersMultipleChoice()->create([
                     'answer' => $answerData['answer'],
                     'diagnosis' => $answerData['diagnosis'],
-                    'weight' => $answerData['weight'],
                 ]);
             }
 

@@ -137,7 +137,6 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
         });
 
         $diagnosisResult = $this->calculateDiagnosis($totalWeight);
-        $client = Client::findOrFail($client_id);
 
         $fileName = 'diagnostico_' . $client_id . '.pdf';
         $pdfStorage = storage_path('app/public/' . $fileName); // Use $fileName aqui

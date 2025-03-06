@@ -22,6 +22,7 @@ class QuestionMultipleChoiceController extends Controller
                 'solution_title' => 'required|string|max:255',
                 'answers' => 'required|array|min:1',
                 'answers.*.answer' => 'required|string|max:255',
+                'answers.*.weight' => 'required|integer', // Adicionado a validação do weight
                 'answers.*.diagnosis' => 'required|string',
             ]);
 
@@ -34,6 +35,7 @@ class QuestionMultipleChoiceController extends Controller
                 AnswersMultipleChoice::create([
                     'question_multiple_choice_id' => $question->id,
                     'answer' => $answer['answer'],
+                    'weight' => $answer['weight'], // Adicionado o weight aqui
                     'diagnosis' => $answer['diagnosis'],
                 ]);
             }
@@ -52,6 +54,7 @@ class QuestionMultipleChoiceController extends Controller
                 'solution_title' => 'required|string|max:255',
                 'answers' => 'required|array',
                 'answers.*.answer' => 'required|string',
+                'answers.*.weight' => 'required|integer', // Adicionado a validação do weight
                 'answers.*.diagnosis' => 'nullable|string',
             ]);
 
@@ -67,6 +70,7 @@ class QuestionMultipleChoiceController extends Controller
             foreach ($validated['answers'] as $answerData) {
                 $question->answersMultipleChoice()->create([
                     'answer' => $answerData['answer'],
+                    'weight' => $answerData['weight'], // Adicionado o weight aqui
                     'diagnosis' => $answerData['diagnosis'],
                 ]);
             }
@@ -75,7 +79,6 @@ class QuestionMultipleChoiceController extends Controller
 
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro ao atualizar a pergunta: ' . $e->getMessage()], 500);
-
         }
     }
 

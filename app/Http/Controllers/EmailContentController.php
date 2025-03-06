@@ -26,6 +26,8 @@ class EmailContentController extends Controller
             'greeting' => 'nullable|string|max:255',
             'intro_text' => 'nullable|string',
             'closing_text' => 'nullable|string',
+            'button_text' => 'nullable|string|max:255', // Validação para o texto do botão
+            'button_link' => 'nullable|string|max:255|url', // Validação para o link (deve ser uma URL válida)
         ]);
 
         // Verifica se já existe um registro, se não, cria um novo
@@ -40,5 +42,4 @@ class EmailContentController extends Controller
 
         return redirect()->route('email.edit')->with('success', 'Conteúdo atualizado com sucesso!');
     }
-
 }

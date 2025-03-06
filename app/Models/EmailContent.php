@@ -11,5 +11,10 @@ class EmailContent extends Model
 
     protected $table = 'email_content';
 
-    protected $fillable = ['greeting', 'intro_text', 'closing_text'];
+    protected $fillable = [
+        'greeting',
+        'intro_text',
+        'closing_text',
+        'button_text',
+        'button_link',];
 }

@@ -90,7 +90,6 @@
 <body>
 <div class="container">
     <div class="content">
-        <!-- Logo incorporada em base64 -->
         <img src="data:image/png;base64,{{base64_encode(file_get_contents(public_path('logo-preto.png')))}}" alt="Logotipo" class="logo">
 
         <p>{{ $emailContent->greeting }}</p>
@@ -103,8 +102,9 @@
             {{ $emailContent->closing_text }}
         </p>
 
-        <!-- Botão de Ação -->
-        <a href="https://www.bwolf.com.br" class="btn">Visite o nosso site</a>
+        @if ($emailContent && $emailContent->button_link && $emailContent->button_text)
+            <a href="{{ $emailContent->button_link }}" class="btn">{{ $emailContent->button_text }}</a>
+        @endif
 
         <p class="text-base footer">
             Atenciosamente,<br>

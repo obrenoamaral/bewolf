@@ -123,21 +123,24 @@
         let currentQuestionIndex = 0;
         let currentMultipleChoiceIndex = 0;
         let currentSection = 'questions'; // 'questions' ou 'multipleChoice'
+        let questionCounter = 1;
+
+
 
         function showQuestion(index) {
             currentSection = 'questions';
             const question = questions[index];
             questionContainer.innerHTML = `
-            <div class="mb-4 opacity-0 transition-opacity duration-500">
-                <label for="question-${question.id}" class="block font-medium text-gray-100">${question.question}</label>
-                ${question.answers.map(answer => `
-                    <div class="flex items-center">
-                        <input type="radio" name="answers[${question.id}]" id="answer-${answer.id}" value="${answer.id}" class="mr-2" required>
-                        <label for="answer-${answer.id}" class="text-gray-100">${answer.answer}</label>
-                    </div>
-                `).join('')}
+    <div class="mb-4 opacity-0 transition-opacity duration-500">
+        <label for="question-${question.id}" class="block font-medium text-gray-100">${questionCounter}. ${question.question}</label>
+        ${question.answers.map(answer => `
+            <div class="flex items-center">
+                <input type="radio" name="answers[${question.id}]" id="answer-${answer.id}" value="${answer.id}" class="mr-2" required>
+                <label for="answer-${answer.id}" class="text-gray-100">${answer.answer}</label>
             </div>
-        `;
+        `).join('')}
+    </div>
+`;
 
             const questionElement = questionContainer.querySelector('div');
             setTimeout(() => questionElement.classList.add('opacity-100'), 10);
@@ -157,7 +160,7 @@
 
             multipleChoiceContainer.innerHTML = `
             <div class="mb-6 opacity-0 transition-opacity duration-500">
-                <p class="font-semibold mb-2 text-gray-100">${question.question_title}</p>
+                <p class="font-semibold mb-2 text-gray-100">${questionCounter}.${question.question_title}</p>
                 ${question.answers_multiple_choice.map(answer => `
                     <label class="block mb-2 text-gray-100">
                         <input type="radio" name="multiple_choice_answers[${question.id}]" value="${answer.id}" class="form-radio h-4 w-4 text-black border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-200">
@@ -181,16 +184,19 @@
             if (currentSection === 'questions') {
                 if (currentQuestionIndex < questions.length - 1) {
                     currentQuestionIndex++;
+                    questionCounter++; // INCREMENTA AQUI
                     showQuestion(currentQuestionIndex);
                 } else {
                     // Vai para a primeira questão de múltipla escolha
                     currentSection = 'multipleChoice';
                     currentMultipleChoiceIndex = 0;
+                    questionCounter++;
                     showMultipleChoiceQuestion(currentMultipleChoiceIndex);
                 }
             } else if (currentSection === 'multipleChoice') {
                 if (currentMultipleChoiceIndex < multipleChoiceQuestions.length - 1) {
                     currentMultipleChoiceIndex++;
+                    questionCounter++;
                     showMultipleChoiceQuestion(currentMultipleChoiceIndex);
                 } else {
                     // Final das questões, mostra o botão de enviar
@@ -204,16 +210,19 @@
             if (currentSection === 'multipleChoice') {
                 if (currentMultipleChoiceIndex > 0) {
                     currentMultipleChoiceIndex--;
+                    questionCounter--;
                     showMultipleChoiceQuestion(currentMultipleChoiceIndex);
                 } else {
                     //Volta para ultima questao normal
                     currentSection = 'questions';
                     currentQuestionIndex = questions.length -1;
+                    questionCounter--;
                     showQuestion(currentQuestionIndex);
                 }
             } else if(currentSection === 'questions'){
                 if (currentQuestionIndex > 0) {
                     currentQuestionIndex--;
+                    questionCounter--;
                     showQuestion(currentQuestionIndex);
                 }
             }

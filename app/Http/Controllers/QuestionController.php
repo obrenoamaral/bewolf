@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers; // Removido o \Api
+namespace App\Http\Controllers;
 
 use App\Models\Answer;
 use App\Models\Question;
-use Cassandra\Exception\ValidationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException; // Import correto
 
 class QuestionController extends Controller
 {
@@ -14,6 +14,13 @@ class QuestionController extends Controller
     {
         $questions = Question::with('answers')->get();
         return view('questions.index', compact('questions'));
+    }
+
+    // Método edit (FALTAVA - ESSENCIAL)
+    public function edit(Question $question)
+    {
+        $question->load('answers'); // Carrega as respostas
+        return response()->json($question); // Retorna como JSON
     }
 
     public function storeWithAnswer(Request $request)
@@ -60,50 +67,78 @@ class QuestionController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Question $question)
     {
+        $validatedData = $request->validate([
+            'question' => 'required|string|max:255',
+            'answers' => 'required|array',
+            'answers.*.answer' => 'required|string|max:255',
+            'answers.*.weight' => 'required|integer',
+            'answers.*.diagnosis' => 'nullable|string',
+            'answers.*.solution' => 'nullable|string',
+            'answers.*.strength_weakness_title' => 'nullable|string|max:255',
+            'answers.*.strength_weakness' => 'nullable|in:strong,weak',
+            'answers.*.id' => 'nullable|integer',
+        ]);
+
+        DB::beginTransaction();
+
         try {
-            DB::beginTransaction();
+            // Atualiza a pergunta
+            $question->update(['question' => $validatedData['question']]);
 
-            $validatedData = $request->validate([
-                'question' => 'required|string|max:255',
-                'answers' => 'required|array|min:1',
-                'answers.*.answer' => 'required|string|max:255',
-                'answers.*.diagnosis' => 'nullable|string|max:255',
-                'answers.*.solution' => 'nullable|string',
-                'answers.*.weight' => 'required|integer|min:1',
-                'answers.*.strength_weakness_title' => 'required|string',
-            ]);
-
-            $question = Question::findOrFail($id);
-
-            $question->question = $validatedData['question'];
-            $question->save();
-
-            $question->answers()->delete();
+            // Atualiza/Cria/Deleta as respostas
+            $existingAnswerIds = [];
 
             foreach ($validatedData['answers'] as $answerData) {
-                $answer = new Answer($answerData);
-                $answer->question_id = $question->id;
-                $answer->save();
+                if (isset($answerData['id'])) {
+                    // Atualiza resposta existente
+                    $answer = Answer::findOrFail($answerData['id']);
+                    $answer->update([
+                        'answer' => $answerData['answer'],
+                        'weight' => $answerData['weight'],
+                        'diagnosis' => $answerData['diagnosis'],
+                        'solution' => $answerData['solution'],
+                        'strength_weakness_title' => $answerData['strength_weakness_title'],
+                        'strength_weakness' => $answerData['strength_weakness'],
+                    ]);
+                    $existingAnswerIds[] = $answer->id;
+                } else {
+                    // Cria nova resposta
+                    $answer = new Answer([
+                        'answer' => $answerData['answer'],
+                        'weight' => $answerData['weight'],
+                        'diagnosis' => $answerData['diagnosis'],
+                        'solution' => $answerData['solution'],
+                        'strength_weakness_title' => $answerData['strength_weakness_title'],
+                        'strength_weakness' => $answerData['strength_weakness'],
+                    ]);
+                    $question->answers()->save($answer);
+                    $existingAnswerIds[] = $answer->id;
+                }
             }
 
+            $question->answers()->whereNotIn('id', $existingAnswerIds)->delete();
             DB::commit();
 
-            return redirect('/questions')->with('success', 'Pergunta e respostas atualizadas com sucesso!');
+            // RETORNO JSON EM CASO DE SUCESSO (Código 200 OK)
+            return response()->json(['message' => 'Pergunta e respostas atualizadas com sucesso!'], 200);
 
         } catch (ValidationException $e) {
-            return redirect()->back()->withErrors($e->errors())->withInput();
+            DB::rollBack();
+            // RETORNO JSON EM CASO DE ERRO DE VALIDAÇÃO (Código 422 Unprocessable Entity)
+            return response()->json(['errors' => $e->errors()], 422);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Erro ao atualizar pergunta e respostas. ' . $e->getMessage())->withInput();
+            // RETORNO JSON EM CASO DE OUTROS ERROS (Código 500 Internal Server Error)
+            return response()->json(['error' => 'Erro ao atualizar pergunta e respostas: ' . $e->getMessage()], 500);
         }
     }
 
-public function destroy($id)
+    public function destroy($id) //Você pode usar o Route Model Binding aqui também.
     {
-        $question = Question::find($id);
+        $question = Question::find($id); //Ou findOrFail
 
         if (!$question) {
             return response()->json(['message' => 'Question not found'], 404);

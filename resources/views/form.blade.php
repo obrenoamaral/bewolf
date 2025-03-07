@@ -137,7 +137,7 @@
             const question = questions[index];
             questionContainer.innerHTML = `
                 <div class="mb-4 opacity-0 transition-opacity duration-500">
-                    <label for="question-${question.id}" class="block font-medium text-gray-100">${questionCounter} ${question.question}</label>
+                    <label for="question-${question.id}" class="block font-medium text-gray-100">${questionCounter}. ${question.question}</label>
                     ${question.answers.map(answer => `
                         <div class="flex items-center">
                             <input type="radio" name="answers[${question.id}]" id="answer-${answer.id}" value="${answer.id}" class="mr-2" required>
@@ -165,7 +165,7 @@
 
             multipleChoiceContainer.innerHTML = `
             <div class="mb-6 opacity-0 transition-opacity duration-500">
-                <p class="font-semibold mb-2 text-gray-100">${questionCounter}.${question.question_title}</p>
+                <p class="font-semibold mb-2 text-gray-100">${questionCounter}. ${question.question_title}</p>
                 ${question.answers_multiple_choice.map(answer => `
                     <label class="block mb-2 text-gray-100">
                         <input type="radio" name="multiple_choice_answers[${question.id}]" value="${answer.id}" class="form-radio h-4 w-4 text-black border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-200">

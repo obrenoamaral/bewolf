@@ -27,8 +27,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [QuestionController::class, 'index'])->name('questions.index');
         Route::get('/create', function () { return view('questions.create'); })->name('questions.create');
         Route::post('/', [QuestionController::class, 'storeWithAnswer'])->name('questions.store');
-        Route::delete('/{id}', [QuestionController::class, 'destroy'])->name('questions.destroy');
-        Route::put('/{id}', [QuestionController::class, 'update'])->name('questions.update');
+        Route::delete('/{question}', [QuestionController::class, 'destroy'])->name('questions.destroy'); // {question}
+        Route::put('/{question}', [QuestionController::class, 'update'])->name('questions.update');   // {question}
+        Route::get('/{question}', [QuestionController::class, 'edit'])->name('questions.edit'); // ADICIONE ESTA LINHA
     });
 
     // Clientes

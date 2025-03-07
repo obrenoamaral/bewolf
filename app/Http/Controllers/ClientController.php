@@ -8,6 +8,7 @@ use App\Models\ClientAnswer;
 use App\Models\QuestionMultipleChoice; // Importe o model de múltipla escolha
 use App\Models\AnswersMultipleChoice; // Importe o model de respostas de múltipla escolha
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule; // Importante para validação unique
 
 class ClientController extends Controller
 {
@@ -31,8 +32,15 @@ class ClientController extends Controller
                 'answers.*.question_id' => 'required|exists:questions,id',
                 'answers.*.answer_id' => 'required|exists:answers,id',
                 'multiple_choice_answers' => 'nullable|array',
-                'multiple_choice_answers.*.question_id' => 'required|exists:question_multiple_choices,id',
-                'multiple_choice_answers.*.answer_id' => 'required|exists:answers_multiple_choices,id',
+                'multiple_choice_answers.*.question_id' => [
+                    'required',
+                    'exists:question_multiple_choices,id',
+                ],
+                'multiple_choice_answers.*.answer_id' => [
+                    'required',
+                    'exists:answers_multiple_choices,id',
+                ],
+
             ]);
 
             // 1. Encontrar ou criar o cliente
@@ -45,7 +53,6 @@ class ClientController extends Controller
                 ] // Se não encontrar, cria um novo com os dados fornecidos
             );
 
-
             // 2. Processar as respostas normais (sobrescrever se existir)
             foreach ($validated['answers'] as $answer) {
                 ClientAnswer::updateOrCreate(
@@ -55,6 +62,7 @@ class ClientController extends Controller
                     ], // Procura por uma resposta existente para este cliente e pergunta
                     [
                         'answer_id' => $answer['answer_id'],
+                        'question_type' => 'normal' // Adicionado question_type
                     ] // Se encontrar, atualiza; se não, cria uma nova
                 );
             }
@@ -66,9 +74,11 @@ class ClientController extends Controller
                         [
                             'client_id' => $client->id,
                             'question_id' => $answer['question_id'],
+
                         ],
                         [
                             'answer_id' => $answer['answer_id'],
+                            'question_type' => 'multiple_choice' // Adicionado question_type
                         ]
                     );
                 }
@@ -76,10 +86,14 @@ class ClientController extends Controller
 
             DB::commit();
 
-            return redirect()->back()->with('success', 'Informações salvas com sucesso!');
+            //return redirect()->back()->with('success', 'Informações salvas com sucesso!'); //Não usar redirect com AJAX
+            return response()->json(['success' => true, 'message' => 'Informações salvas com sucesso!']);
+
+
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Erro ao salvar informações: ' . $e->getMessage());
+            //Não usar redirect com AJAX
+            return response()->json(['success' => false, 'message' => 'Erro ao salvar informações: ' . $e->getMessage()], 500);
         }
     }
 }

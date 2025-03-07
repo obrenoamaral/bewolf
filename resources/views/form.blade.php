@@ -45,7 +45,7 @@
     <div class="max-w-4xl w-full p-8 text-center md:text-left">
         <h1 class="text-2xl md:text-2xl text-gray-100 font-bold mb-6 uppercase">Seja muito bem-vindo(a) ao Diagnóstico Empresarial BeWolf</h1>
         <p class="text-base md:text-md text-gray-100 mb-6">Quer ter uma visão clara da situação atual da sua empresa e identificar áreas de melhoria?</p>
-        <p class="text-base md:text-md text-gray-100 mb-6">Este diagnóstico gratuito, com 35 perguntas, foi desenvolvido para te ajudar a obter um panorama completo do seu negócio. Responda com atenção e receba um relatório personalizado com recomendações estratégicas.</p>
+        <p class="text-base md:text-md text-gray-100 mb-6">Este diagnóstico gratuito, com 30 perguntas, foi desenvolvido para te ajudar a obter um panorama completo do seu negócio. Responda com atenção e receba um relatório personalizado com recomendações estratégicas.</p>
         <p class="text-base md:text-md text-gray-100 mb-6">Tempo estimado para preenchimento: 5 minutos</p>
         <p class="text-base md:text-md text-gray-100 mb-6">Este formulário exige concentração. Certifique-se de estar focado antes de começar. Quando estiver preparado, clique em "Começar".</p>
         <button id="startButton" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition duration-300">Começar</button>
@@ -92,8 +92,8 @@
                 <div class="mt-6">
                     <button type="submit" class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded">Enviar</button>
                     <span id="loadingIndicator" class="hidden ml-2 text-gray-100">
-              <div class="spinner"></div> Enviando...
-            </span>
+                        <div class="spinner"></div> Enviando...
+                    </span>
                 </div>
             </form>
         </div>
@@ -115,7 +115,9 @@
         const questionContainer = document.getElementById('questionContainer');
         const multipleChoiceContainer = document.getElementById('multipleChoiceContainer');
         const clientInfoForm = document.getElementById('clientInfoForm');
-        const loadingIndicator = document.getElementById('loadingIndicator'); // Elemento do indicador
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        // Removido: const backToClientInfo = ...
+        // Removido: const startQuestionsButton = ...  (Não estamos mais usando esses botões)
 
         const questions = @json($questions);
         const multipleChoiceQuestions = @json($multipleChoiceQuestions);
@@ -135,16 +137,16 @@
             currentSection = 'questions';
             const question = questions[index];
             questionContainer.innerHTML = `
-    <div class="mb-4 opacity-0 transition-opacity duration-500">
-        <label for="question-${question.id}" class="block font-medium text-gray-100">${questionCounter} ${question.question}</label>
-        ${question.answers.map(answer => `
-            <div class="flex items-center">
-                <input type="radio" name="answers[${question.id}]" id="answer-${answer.id}" value="${answer.id}" class="mr-2" required>
-                <label for="answer-${answer.id}" class="text-gray-100">${answer.answer}</label>
-            </div>
-        `).join('')}
-    </div>
-`;
+                <div class="mb-4 opacity-0 transition-opacity duration-500">
+                    <label for="question-${question.id}" class="block font-medium text-gray-100">${questionCounter} ${question.question}</label>
+                    ${question.answers.map(answer => `
+                        <div class="flex items-center">
+                            <input type="radio" name="answers[${question.id}]" id="answer-${answer.id}" value="${answer.id}" class="mr-2" required>
+                            <label for="answer-${answer.id}" class="text-gray-100">${answer.answer}</label>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
 
             const questionElement = questionContainer.querySelector('div');
             setTimeout(() => questionElement.classList.add('opacity-100'), 10);
@@ -180,18 +182,15 @@
             multipleChoiceContainer.classList.remove('hidden');
             questionContainer.classList.add('hidden');
             toggleButtons();
-
-
         }
 
         function showNextQuestion() {
             if (currentSection === 'questions') {
                 if (currentQuestionIndex < questions.length - 1) {
                     currentQuestionIndex++;
-                    questionCounter++; // INCREMENTA AQUI
+                    questionCounter++;
                     showQuestion(currentQuestionIndex);
                 } else {
-                    // Vai para a primeira questão de múltipla escolha
                     currentSection = 'multipleChoice';
                     currentMultipleChoiceIndex = 0;
                     questionCounter++;
@@ -203,7 +202,6 @@
                     questionCounter++;
                     showMultipleChoiceQuestion(currentMultipleChoiceIndex);
                 } else {
-                    // Final das questões, mostra o botão de enviar
                     questionScreen.classList.add('hidden');
                     clientInfoScreen.classList.remove('hidden');
                 }
@@ -228,14 +226,22 @@
                     currentQuestionIndex--;
                     questionCounter--;
                     showQuestion(currentQuestionIndex);
+                }  else { //Adicionado
+                    questionScreen.classList.add('hidden');
+                    introScreen.classList.remove('hidden');
                 }
             }
         }
 
-
         function toggleButtons() {
             // Botão Voltar
-            backButton.disabled = (currentSection === 'questions' && currentQuestionIndex === 0);
+            if (currentSection === 'questions' && currentQuestionIndex === 0) {
+                backButton.textContent = "Voltar para Boas-vindas";
+                backButton.disabled = false;
+            } else {
+                backButton.textContent = "Voltar";
+                backButton.disabled = (currentSection === 'questions' && currentQuestionIndex === 0); // Corrigido:  Operador lógico correto.
+            }
 
             // Botão Próximo / Enviar
             if (currentSection === 'questions') {
@@ -245,7 +251,7 @@
                 nextButton.classList.remove('hidden');
                 submitButton.classList.add('hidden');
 
-            } else if (currentSection === 'multipleChoice') {
+            } else if (currentSection === 'multipleChoice') { // Corrigido:  Estrutura if...else if correta.
                 const currentMultipleChoiceId = multipleChoiceQuestions[currentMultipleChoiceIndex].id;
                 const isAnswered = document.querySelector(`input[name="multiple_choice_answers[${currentMultipleChoiceId}]"]:checked`);
                 nextButton.disabled = !isAnswered;
@@ -256,9 +262,9 @@
                     nextButton.classList.add('hidden');
                     submitButton.classList.remove('hidden');
                 }
-
             }
         }
+
 
         startButton.addEventListener('click', function () {
             introScreen.classList.add('hidden');
@@ -266,60 +272,33 @@
             showQuestion(currentQuestionIndex);
         });
 
-        nextButton.addEventListener('click', function () {
-            showNextQuestion();
-        });
+        nextButton.addEventListener('click', showNextQuestion);
+        backButton.addEventListener('click', showPreviousQuestion); // Usando showPreviousQuestion
 
-        backButton.addEventListener('click', function () {
-            showPreviousQuestion();
-        });
+        questionContainer.addEventListener('change', toggleButtons);
+        multipleChoiceContainer.addEventListener('change', toggleButtons);
 
-        questionContainer.addEventListener('change', function (event) {
-            const questionId = event.target.name.match(/\[(\d+)\]/)[1];
-            if (!answers[questionId]) {
-                answers[questionId] = [];
-            }
-            if (!answers[questionId].includes(event.target.value)) {
-                answers[questionId].push(event.target.value);
-            }
-            toggleButtons();
-        });
-
-        multipleChoiceContainer.addEventListener('change', function (event) {
-            const questionId = event.target.name.match(/\[(\d+)\]/)[1];
-            multipleChoiceAnswers[questionId] = event.target.value; // Apenas um valor é selecionado para múltipla escolha
-            toggleButtons();
-        });
-
-        // Comportamento do botão "Enviar"
         submitButton.addEventListener('click', function () {
-            // Oculta a tela de questões e exibe o formulário de informações do cliente
             questionScreen.classList.add('hidden');
             clientInfoScreen.classList.remove('hidden');
         });
 
+
         clientInfoForm.addEventListener('submit', function (e) {
             e.preventDefault();
 
-            // Mostra o indicador de carregamento
             loadingIndicator.classList.remove('hidden');
-
-            // Desabilita o botão de envio
             const submitBtn = this.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
-            submitBtn.classList.add('opacity-50', 'cursor-not-allowed'); // Estilo de desabilitado
-
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
             const formData = new FormData(this);
-
-            // Coleta respostas de questões simples
             Object.keys(answers).forEach(questionId => {
                 answers[questionId].forEach(value => {
-                    formData.append(`answers[${questionId}][]`, value); // Envia como array
+                    formData.append(`answers[${questionId}][]`, value);
                 });
             });
 
-            // Coleta respostas de múltipla escolha
             Object.keys(multipleChoiceAnswers).forEach(questionId => {
                 formData.append(`multiple_choice_answers[${questionId}]`, multipleChoiceAnswers[questionId]);
             });
@@ -333,13 +312,7 @@
                     'X-CSRF-TOKEN': csrfToken
                 }
             })
-                .then(response => {
-                    if (!response.ok) {
-                        // Trata erros de rede ou HTTP (status 4xx ou 5xx)
-                        throw new Error(`Erro HTTP! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         window.location.href = '/thankyou';
@@ -349,19 +322,16 @@
                 })
                 .catch(error => {
                     console.error('Erro:', error);
-                    alert('Erro ao enviar o formulário. Por favor, tente novamente.');
+                    alert('Erro ao enviar o formulário.  Por favor, tente novamente.');
                 })
                 .finally(() => {
-                    // Oculta o indicador de carregamento, independentemente do resultado
                     loadingIndicator.classList.add('hidden');
-                    // Reabilita o botão
                     submitBtn.disabled = false;
                     submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 });
         });
 
-        //Inicializa os botoes
-        toggleButtons();
+        toggleButtons(); //Chamada inicial
     });
 
 </script>

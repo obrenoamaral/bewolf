@@ -214,11 +214,11 @@
     <div style="display:flex; flex-direction: column; items-center; justify-content: center; height: 100vh;" class="text-center">
         <p style="font-size: 1.125rem; font-weight: 600; color: #1f2937; text-align: center; margin-bottom: 20pt">
             Caso queira potencializar os resultados da sua empresa e alcançar seus objetivos de forma mais rápida e mais preparada,
-            acesse os links abaixo:
+            acesse nosso site:
         </p>
         <a href="https://bwolf.com.br" class="decoration-none">www.bwolf.com.br</a>
         <div style="margin-top: 1rem;" class="text-center">
-            <p style="font-weight: bold;" class="text-center">Indique Empresários para participar da Reunião Estratégica GRATUITA</p>
+            <p style="font-weight: bold;" class="text-center">Indique para seus amigos empresários que querem descobrir os pontos de melhoria e as oportunidades de crescimento do negócio!</p>
             <p><a href="https://form.bwolf.com.br">www.form.bwolf.com.br</a></p>
         </div>
         <p style="margin-top: 1rem; color: #374151;" class="text-center">Ficaremos sempre à sua disposição.</p>

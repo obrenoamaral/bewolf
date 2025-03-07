@@ -30,48 +30,55 @@ class ClientController extends Controller
                 'answers' => 'required|array',
                 'answers.*.question_id' => 'required|exists:questions,id',
                 'answers.*.answer_id' => 'required|exists:answers,id',
-
-                // Validação para as respostas de múltipla escolha:
-                'multiple_choice_answers' => 'nullable|array', // Campo opcional, pois nem todos terão respostas de múltipla escolha
+                'multiple_choice_answers' => 'nullable|array',
                 'multiple_choice_answers.*.question_id' => 'required|exists:question_multiple_choices,id',
                 'multiple_choice_answers.*.answer_id' => 'required|exists:answers_multiple_choices,id',
             ]);
 
+            // 1. Encontrar ou criar o cliente
+            $client = Client::firstOrCreate(
+                ['email' => $validated['email']], // Procura por um cliente existente com o mesmo e-mail
+                [
+                    'name' => $validated['name'],
+                    'company' => $validated['company'],
+                    'phone' => $validated['phone'],
+                ] // Se não encontrar, cria um novo com os dados fornecidos
+            );
 
-            $client = Client::create([
-                'name' => $validated['name'],
-                'company' => $validated['company'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'],
-            ]);
 
-            // Salva as respostas normais
+            // 2. Processar as respostas normais (sobrescrever se existir)
             foreach ($validated['answers'] as $answer) {
-                ClientAnswer::create([
-                    'client_id' => $client->id,
-                    'question_id' => $answer['question_id'],
-                    'answer_id' => $answer['answer_id'],
-                ]);
-            }
-
-            // Salva as respostas de múltipla escolha (se houver)
-            if (isset($validated['multiple_choice_answers'])) {
-                foreach ($validated['multiple_choice_answers'] as $answer) {
-                    ClientAnswer::create([
+                ClientAnswer::updateOrCreate(
+                    [
                         'client_id' => $client->id,
                         'question_id' => $answer['question_id'],
+                    ], // Procura por uma resposta existente para este cliente e pergunta
+                    [
                         'answer_id' => $answer['answer_id'],
-                    ]);
-                }
+                    ] // Se encontrar, atualiza; se não, cria uma nova
+                );
             }
 
+            // 3. Processar as respostas de múltipla escolha (sobrescrever se existir)
+            if (isset($validated['multiple_choice_answers'])) {
+                foreach ($validated['multiple_choice_answers'] as $answer) {
+                    ClientAnswer::updateOrCreate( //Usar o mesmo model ClientAnswer
+                        [
+                            'client_id' => $client->id,
+                            'question_id' => $answer['question_id'],
+                        ],
+                        [
+                            'answer_id' => $answer['answer_id'],
+                        ]
+                    );
+                }
+            }
 
             DB::commit();
 
             return redirect()->back()->with('success', 'Informações salvas com sucesso!');
         } catch (\Exception $e) {
             DB::rollBack();
-
             return redirect()->back()->with('error', 'Erro ao salvar informações: ' . $e->getMessage());
         }
     }

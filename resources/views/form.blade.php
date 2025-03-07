@@ -116,13 +116,12 @@
         const multipleChoiceContainer = document.getElementById('multipleChoiceContainer');
         const clientInfoForm = document.getElementById('clientInfoForm');
         const loadingIndicator = document.getElementById('loadingIndicator');
-        // Removido: const backToClientInfo = ...
-        // Removido: const startQuestionsButton = ...  (Não estamos mais usando esses botões)
 
         const questions = @json($questions);
         const multipleChoiceQuestions = @json($multipleChoiceQuestions);
-        const answers = {};
-        const multipleChoiceAnswers = {};
+        const answers = {}; // Objeto para armazenar as respostas das perguntas normais
+        const multipleChoiceAnswers = {}; // Objeto para armazenar as respostas de múltipla escolha
+
 
         let currentQuestionIndex = 0;
         let currentMultipleChoiceIndex = 0;
@@ -138,7 +137,7 @@
             const question = questions[index];
             questionContainer.innerHTML = `
                 <div class="mb-4 opacity-0 transition-opacity duration-500">
-                    <label for="question-${question.id}" class="block font-medium text-gray-100">${questionCounter}. ${question.question}</label>
+                    <label for="question-${question.id}" class="block font-medium text-gray-100">${questionCounter} ${question.question}</label>
                     ${question.answers.map(answer => `
                         <div class="flex items-center">
                             <input type="radio" name="answers[${question.id}]" id="answer-${answer.id}" value="${answer.id}" class="mr-2" required>
@@ -166,7 +165,7 @@
 
             multipleChoiceContainer.innerHTML = `
             <div class="mb-6 opacity-0 transition-opacity duration-500">
-                <p class="font-semibold mb-2 text-gray-100">${questionCounter}. ${question.question_title}</p>
+                <p class="font-semibold mb-2 text-gray-100">${questionCounter}.${question.question_title}</p>
                 ${question.answers_multiple_choice.map(answer => `
                     <label class="block mb-2 text-gray-100">
                         <input type="radio" name="multiple_choice_answers[${question.id}]" value="${answer.id}" class="form-radio h-4 w-4 text-black border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-200">
@@ -240,7 +239,7 @@
                 backButton.disabled = false;
             } else {
                 backButton.textContent = "Voltar";
-                backButton.disabled = (currentSection === 'questions' && currentQuestionIndex === 0); // Corrigido:  Operador lógico correto.
+                backButton.disabled =  !(currentSection === 'questions' && currentQuestionIndex === 0);
             }
 
             // Botão Próximo / Enviar
@@ -251,7 +250,7 @@
                 nextButton.classList.remove('hidden');
                 submitButton.classList.add('hidden');
 
-            } else if (currentSection === 'multipleChoice') { // Corrigido:  Estrutura if...else if correta.
+            } else if (currentSection === 'multipleChoice') {
                 const currentMultipleChoiceId = multipleChoiceQuestions[currentMultipleChoiceIndex].id;
                 const isAnswered = document.querySelector(`input[name="multiple_choice_answers[${currentMultipleChoiceId}]"]:checked`);
                 nextButton.disabled = !isAnswered;
@@ -273,10 +272,26 @@
         });
 
         nextButton.addEventListener('click', showNextQuestion);
-        backButton.addEventListener('click', showPreviousQuestion); // Usando showPreviousQuestion
+        backButton.addEventListener('click', showPreviousQuestion);
 
-        questionContainer.addEventListener('change', toggleButtons);
-        multipleChoiceContainer.addEventListener('change', toggleButtons);
+        // *** RESTAURADO: Event listeners para coletar as respostas ***
+        questionContainer.addEventListener('change', function (event) {
+            const questionId = event.target.name.match(/\[(\d+)\]/)[1];  // Extrai o ID da pergunta
+            if (!answers[questionId]) {
+                answers[questionId] = []; // Inicializa o array se for a primeira resposta
+            }
+            if (!answers[questionId].includes(event.target.value)) {
+                answers[questionId].push(event.target.value);
+            }
+            toggleButtons(); // Atualiza o estado dos botões
+        });
+
+        multipleChoiceContainer.addEventListener('change', function (event) {
+            const questionId = event.target.name.match(/\[(\d+)\]/)[1]; // Extrai o ID da pergunta
+            multipleChoiceAnswers[questionId] = event.target.value; // Armazena a resposta (sobrescreve se já existir)
+            toggleButtons(); // Atualiza o estado dos botões
+        });
+        // *** FIM DA SEÇÃO RESTAURADA ***
 
         submitButton.addEventListener('click', function () {
             questionScreen.classList.add('hidden');
@@ -293,15 +308,19 @@
             submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
             const formData = new FormData(this);
+
+            // *** Adiciona as respostas ao FormData ***
             Object.keys(answers).forEach(questionId => {
-                answers[questionId].forEach(value => {
-                    formData.append(`answers[${questionId}][]`, value);
+                answers[questionId].forEach(answerId => { // Corrigido: Itera sobre os IDs das respostas
+                    formData.append(`answers[${questionId}][]`, answerId);
                 });
             });
 
             Object.keys(multipleChoiceAnswers).forEach(questionId => {
                 formData.append(`multiple_choice_answers[${questionId}]`, multipleChoiceAnswers[questionId]);
             });
+            // *** Fim da adição ao FormData ***
+
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 

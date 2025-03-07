@@ -9,9 +9,9 @@
             margin: 20mm 5mm 15mm 5mm; /* Margens superior, direita, inferior, esquerda */
         }
         body {
-            font-family: sans-serif; /* Fonte mais segura para PDFs */
-            font-size: 12pt;
-            line-height: 1.4; /* Espaçamento entre linhas */
+            font-family: Arial;
+            font-size: 10pt;
+            line-height: 1; /* Espaçamento entre linhas */
         }
         .page-break {
             page-break-after: always;
@@ -95,10 +95,13 @@
 
 <main class="container" >
     <section class="table-section">
-        <div style="background-color: black; color: white; text-align: center; margin-top: 1.5rem; border-top-left-radius: 0.25rem; border-top-right-radius: 0.25rem;">
-            <h2 style="font-size: 1.125rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 1.25rem;">MAPEAMENTO DE DIAGNÓSTICO EMPRESARIAL</h2>
-        </div>
+
         <table role="table">
+            <thead>
+                <div style="text-align: center; border: 1px solid black; border-bottom: 0px; padding-bottom: 1px" >
+                    <p style="font-size: 1em; font-weight: bold;">MAPEAMENTO DE DIAGNÓSTICO EMPRESARIAL</p>
+                </div>
+            </thead>
             <tbody>
             @foreach($orderedPoints as $data)
                 <tr style="border: 1pt solid black;">
@@ -107,7 +110,7 @@
                     @if(!empty($data['answer']))
                         background-color: #4b5563; color: white;
                     @else
-                        background-color: #f2f2f2; /* Ou qualquer outra cor */
+                        background-color: #f2f2f2;
                     @endif
                     text-align: center;">
                         {{ $data['answer'] ?: 'N/A' }}
@@ -135,18 +138,20 @@
         }
         ?>
         <div style="border: 0.5pt solid #4b5563; margin-top: 0.4rem;">
-            <div style="font-size: 1rem; font-weight: bold; color: white; text-align: center; {{ $bgColorStyle }}">
-                <p style="margin: 0; padding: 0.2rem;">{{ $diagnosisResult['name'] }}</p> </div>
+            <div style=" font-weight: bold; color: white; text-align: center; {{ $bgColorStyle }}">
+                <p style="margin: 0; padding: 0.5rem; font-size: 1em;"> {{ $diagnosisResult['name'] }}</p> </div>
             <div style="padding: 0.4rem; color: black; word-wrap: break-word;"> <p style="margin:0;">{{ $diagnosisResult['description'] }}</p> </div>
         </div>
     </section>
 
     <section class="analysis page-break" style="margin-top: 2.5rem;">
-        <h3 style="text-align: center; margin-top: 1.25rem; margin-bottom: 1.25rem;">ANÁLISE DE POTENCIAIS PONTOS FORTES E OPORTUNIDADES DE DESENVOLVIMENTO</h3>
+        <div style="border: 1px solid;">
+            <h3 style="text-align: center; font-size: 1em" >ANÁLISE DE POTENCIAIS PONTOS FORTES E OPORTUNIDADES DE DESENVOLVIMENTO</h3>
+        </div>
         <table role="table">
             <thead>
             <tr>
-                <th style="background-color: #22c55e; color: white; width: 50%; padding: 0.25rem; border: 1pt solid #4b5563;">PONTOS FORTES</th>
+                <th style="background-color: #22c55e; color: white; width: 50%; padding: 0.5rem; border: 1pt solid #4b5563;">PONTOS FORTES</th>
                 <th style="background-color: #ef4444; color: white; width: 50%; padding: 0.25rem; border: 1pt solid #4b5563;">PONTOS PARA DESENVOLVER</th>
             </tr>
             </thead>
@@ -173,39 +178,48 @@
     </section>
 
     <section class="multiple-choice-answers page-break" style="width: 100%;">
-        <h3 style="font-weight: bold; text-align: center; margin-top: 1.25rem; margin-bottom: 1.25rem;">ANÁLISES GERAIS DA EMPRESA E EMPREENDEDOR</h3>
-        @if ($multipleChoiceAnswers->isNotEmpty())
-            @foreach ($multipleChoiceAnswers as $answer)
-                <p style="font-weight: bold;">{{ $answer->questionMultipleChoice->solution_title }}</p>
+        <div style="border: 1px solid; margin-top: 1em;">
+            <h3 style="font-weight: bold; text-align: center; font-size: 1em">ANÁLISES GERAIS DA EMPRESA E EMPREENDEDOR</h3>
+        </div>
+
+        @foreach ($multipleChoiceAnswers as $answer)
+            <p style="font-weight: bold;">{{ $answer->questionMultipleChoice->solution_title }}</p>
+            @if ($answer->answerMultipleChoice)
                 <p> {{ $answer->answerMultipleChoice->diagnosis }}</p>
-            @endforeach
-        @endif
+            @endif
+        @endforeach
     </section>
 
     <section class="diagnosis-details page-break">
-        <h1 style="margin-top: 2rem; font-size: 1.125rem; font-weight: bold; text-align: center;">DETALHAMENTO DO DIAGNÓSTICO</h1>
-        <?php $questionCounter = 1; ?>
+        <div style="border: 1px solid;">
+            <h3 style="text-align: center; font-size: 1em; ">DETALHAMENTO DO DIAGNÓSTICO</h3>
+        </div>
         @foreach($orderedPoints as $data)
-            <div style="margin-top: 1.5rem; padding: 1rem;">
-                <h2 style="font-size: 1rem; font-weight: 600;">{{ $questionCounter }}. {{ $data['diagnosis_title'] }}</h2>
+            @if($data['solution'] != '')
+            <div style="margin-top: 1.5rem;">
+                <h2 style="font-size: 1rem; font-weight: 600;">{{ $data['diagnosis_title'] }}</h2>
                 <p style="margin-top: 0.5rem;"><span style="font-weight: bold;">Diagnóstico:</span></p>
                 <p style="word-wrap: break-word;">{{ $data['diagnosis'] }}</p>
                 <p style="margin-top: 0.5rem;"><span style="font-weight: bold;">Solução:</span></p>
                 <p style="word-wrap: break-word;">{{ $data['solution'] }}</p>
             </div>
-                <?php $questionCounter++; ?>
+            @endif
+
         @endforeach
+
     </section>
 </main>
 
 <footer class="container page-break">
-    <div style="display:flex; flex-direction: column; items-center; justify-content: center; height: 100vh;">
+    <div style="display:flex; flex-direction: column; items-center; justify-content: center; height: 100vh;" class="text-center">
         <p style="font-size: 1.125rem; font-weight: 600; color: #1f2937; text-align: center; margin-bottom: 20pt">
             Caso queira potencializar os resultados da sua empresa e alcançar seus objetivos de forma mais rápida e mais preparada,
             acesse os links abaixo:
         </p>
-        <div style="margin-top: 1rem; ">
+        <a href="https://bwolf.com.br" class="decoration-none">www.bwolf.com.br</a>
+        <div style="margin-top: 1rem;" class="text-center">
             <p style="font-weight: bold;" class="text-center">Indique Empresários para participar da Reunião Estratégica GRATUITA</p>
+            <p><a href="https://form.bwolf.com.br">www.form.bwolf.com.br</a></p>
         </div>
         <p style="margin-top: 1rem; color: #374151;" class="text-center">Ficaremos sempre à sua disposição.</p>
         <p style="margin-top: 0.5rem; color: #111827; font-weight: bold;" class="text-center">BeWolf Consultoria Empresarial</p>

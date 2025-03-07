@@ -100,15 +100,16 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
 
         // Respostas de múltipla escolha (AJUSTADO)
         foreach ($multipleChoiceAnswers as $multipleChoiceAnswer) {
+
             if ($multipleChoiceAnswer->questionMultipleChoice && $multipleChoiceAnswer->answerMultipleChoice) {
                 $orderedPoints[] = [
-                    'question' => $multipleChoiceAnswer->questionMultipleChoice->question_title, // Usar question_title
-                    'answer' => $multipleChoiceAnswer->answerMultipleChoice->answer,  // Usar answer
-                    'diagnosis_title' => $multipleChoiceAnswer->questionMultipleChoice->solution_title, //Pega o solution title da question
-                    'diagnosis' => $multipleChoiceAnswer->answerMultipleChoice->diagnosis, //Pega o diagnosis da answer
-                    'solution' => '',  // Não tem
-                    'strength_weakness_title' => '', // Não tem
-                    'strength_weakness' => '', // Não tem
+                    'question' => $multipleChoiceAnswer->questionMultipleChoice->question_title,
+                    'answer' => $multipleChoiceAnswer->answerMultipleChoice->answer,
+                    'diagnosis_title' => $multipleChoiceAnswer->questionMultipleChoice->solution_title,
+                    'diagnosis' => $multipleChoiceAnswer->answerMultipleChoice->diagnosis,
+                    'solution' => '',
+                    'strength_weakness_title' => $multipleChoiceAnswer->answerMultipleChoice->strength_weakness_title, // Corrigido
+                    'strength_weakness' => $multipleChoiceAnswer->answerMultipleChoice->strength_weakness, // Corrigido
                 ];
             }
         }

@@ -94,7 +94,7 @@
             const editButtons = document.querySelectorAll(".edit-button");
             const editModal = document.getElementById("editModal");
             const questionText = document.getElementById("questionText");
-            const solutionTitleText = document.getElementById("solutionTitleText"); // Novo input
+            const solutionTitleText = document.getElementById("solutionTitleText");
             const answersContainer = document.getElementById("answersContainer");
             const addAnswerButton = document.getElementById("addAnswerButton");
             const cancelEditButton = document.getElementById("cancelEditButton");
@@ -108,7 +108,7 @@
 
                     questionId.value = question.id;
                     questionText.value = question.question_title;
-                    solutionTitleText.value = question.solution_title; // Preenche o input
+                    solutionTitleText.value = question.solution_title;
                     answersContainer.innerHTML = "";
 
                     if (answers) {
@@ -131,16 +131,37 @@
 
             function addAnswer(answer = null) {
                 const answerDiv = document.createElement("div");
-                answerDiv.classList.add("mb-2");
+                answerDiv.classList.add("mb-4", "border", "border-gray-600", "p-4", "rounded-lg");
 
                 answerDiv.innerHTML = `
-            <input type="text" value="${answer ? answer.answer : ""}" class="w-full p-2 bg-transparent rounded-md text-gray-100 mb-1 answer-input" required>
-            <div class="flex gap-2 text-sm text-gray-300">
-                <textarea class="flex-1 p-2 bg-transparent rounded-md diagnosis-input" placeholder="Diagnóstico">${answer ? answer.diagnosis : ""}</textarea>
-                <input type="number" value="${answer ? answer.weight : ""}" class="w-16 p-2 bg-transparent rounded-md weight-input" placeholder="Peso" required>
-            </div>
-            <button type="button" class="mt-2 text-red-400 hover:text-red-500 remove-answer">Remover</button>
-        `;
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-300 mb-1">Resposta:</label>
+                        <input type="text" value="${answer ? answer.answer : ""}" class="w-full p-2 bg-transparent rounded-md text-gray-100" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 mb-1">Peso:</label>
+                        <input type="number" value="${answer ? answer.weight : ""}" class="w-full p-2 bg-transparent rounded-md text-gray-100" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 mb-1">Diagnóstico:</label>
+                        <textarea class="w-full p-2 bg-transparent rounded-md text-gray-100">${answer ? answer.diagnosis : ""}</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 mb-1">Título Força/Fraqueza:</label>
+                        <input type="text" value="${answer ? answer.strength_weakness_title : ""}" class="w-full p-2 bg-transparent rounded-md text-gray-100">
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 mb-1">Força/Fraqueza:</label>
+                        <select class="w-full p-2 bg-transparent rounded-md text-gray-100">
+                            <option value="">Selecione</option>
+                            <option value="strong" ${answer && answer.strength_weakness === 'strong' ? 'selected' : ''}>Forte</option>
+                            <option value="weak" ${answer && answer.strength_weakness === 'weak' ? 'selected' : ''}>Fraco</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="mt-2 text-red-400 hover:text-red-500 remove-answer">Remover</button>
+            `;
 
                 answersContainer.appendChild(answerDiv);
 
@@ -155,20 +176,24 @@
 
                 const payload = {
                     question_title: questionText.value,
-                    solution_title: solutionTitleText.value, // Inclui o novo campo
+                    solution_title: solutionTitleText.value,
                     answers: [],
                 };
 
                 const answerDivs = document.querySelectorAll("#answersContainer > div");
                 answerDivs.forEach((answerDiv) => {
-                    const answerInput = answerDiv.querySelector(".answer-input");
-                    const diagnosisInput = answerDiv.querySelector(".diagnosis-input");
-                    const weightInput = answerDiv.querySelector(".weight-input");
+                    const answerInput = answerDiv.querySelector("input[type='text']");
+                    const diagnosisInput = answerDiv.querySelector("textarea");
+                    const weightInput = answerDiv.querySelector("input[type='number']");
+                    const strengthWeaknessTitleInput = answerDiv.querySelectorAll("input[type='text']")[1]; // Pega o segundo input text
+                    const strengthWeaknessSelect = answerDiv.querySelector("select");
 
                     payload.answers.push({
                         answer: answerInput.value,
                         diagnosis: diagnosisInput.value,
                         weight: parseInt(weightInput.value, 10) || 0,
+                        strength_weakness_title: strengthWeaknessTitleInput.value,
+                        strength_weakness: strengthWeaknessSelect.value,
                     });
                 });
 
@@ -196,5 +221,4 @@
             });
         });
     </script>
-
 </x-app-layout>

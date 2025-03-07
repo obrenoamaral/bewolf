@@ -36,6 +36,16 @@
 
                     <label class="block text-gray-100 font-medium mt-2">Diagnóstico:</label>
                     <textarea name="answers[0][diagnosis]" required placeholder="Diagnóstico" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 resize-y break-words"></textarea>
+
+                    <label class="block text-gray-100 font-medium mt-2">Título Ponto forte/fraco:</label>
+                    <input name="answers[0][strength_weakness_title]" type="text" placeholder="Título Ponto forte/fraco" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 break-words"/>
+
+                    <label class="block text-gray-100 font-medium mt-2">Ponto Forte ou Fraco:</label>
+                    <select name="answers[0][strength_weakness]" class="w-full p-2 rounded-lg mt-1 bg-dark text-gray-100">
+                        <option value="">Selecione</option>
+                        <option value="strong">Forte</option>
+                        <option value="weak">Fraco</option>
+                    </select>
                 </div>
             </div>
 
@@ -68,6 +78,16 @@
 
                     <label class="block text-gray-100 font-medium mt-2">Diagnóstico:</label>
                     <textarea name="answers[${answerIndex}][diagnosis]" required placeholder="Diagnóstico" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 resize-y"></textarea>
+
+                    <label class="block text-gray-100 font-medium mt-2">Título Ponto Forte ou Fraco:</label>
+                    <input name="answers[${answerIndex}][strength_weakness_title]" type="text" placeholder="Título Ponto Forte ou Fraco" class="w-full p-2 rounded-lg mt-1 bg-transparent text-gray-100 break-words"/>
+
+                    <label class="block text-gray-100 font-medium mt-2">Ponto Forte ou Fraco:</label>
+                    <select name="answers[${answerIndex}][strength_weakness]" class="w-full p-2 rounded-lg mt-1 bg-dark text-gray-100">
+                        <option value="">Selecione</option>
+                        <option value="strong">Forte</option>
+                        <option value="weak">Fraco</option>
+                    </select>
 
                     <button type="button" class="remove-answer mt-2 text-red-500 hover:text-red-700 text-sm">
                         Remover Resposta

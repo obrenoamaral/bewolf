@@ -9,7 +9,8 @@ class AnswersMultipleChoice extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['question_multiple_choice_id', 'answer', 'weight', 'diagnosis'];
+    protected $fillable = ['question_multiple_choice_id', 'answer', 'weight', 'diagnosis','strength_weakness_title',
+        'strength_weakness',];
 
     public function questionMultipleChoice()
     {

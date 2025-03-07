@@ -22,8 +22,10 @@ class QuestionMultipleChoiceController extends Controller
                 'solution_title' => 'required|string|max:255',
                 'answers' => 'required|array|min:1',
                 'answers.*.answer' => 'required|string|max:255',
-                'answers.*.weight' => 'required|integer', // Adicionado a validação do weight
+                'answers.*.weight' => 'required|integer',
                 'answers.*.diagnosis' => 'required|string',
+                'answers.*.strength_weakness_title' => 'nullable|string',
+                'answers.*.strength_weakness' => 'nullable|in:strong,weak',
             ]);
 
             $question = QuestionMultipleChoice::create([
@@ -35,8 +37,10 @@ class QuestionMultipleChoiceController extends Controller
                 AnswersMultipleChoice::create([
                     'question_multiple_choice_id' => $question->id,
                     'answer' => $answer['answer'],
-                    'weight' => $answer['weight'], // Adicionado o weight aqui
+                    'weight' => $answer['weight'],
                     'diagnosis' => $answer['diagnosis'],
+                    'strength_weakness_title' => $answer['strength_weakness_title'] ?? null,
+                    'strength_weakness' => $answer['strength_weakness'] ?? null,
                 ]);
             }
 
@@ -54,8 +58,10 @@ class QuestionMultipleChoiceController extends Controller
                 'solution_title' => 'required|string|max:255',
                 'answers' => 'required|array',
                 'answers.*.answer' => 'required|string',
-                'answers.*.weight' => 'required|integer', // Adicionado a validação do weight
+                'answers.*.weight' => 'required|integer',
                 'answers.*.diagnosis' => 'nullable|string',
+                'answers.*.strength_weakness_title' => 'nullable|string',
+                'answers.*.strength_weakness' => 'nullable|in:strong,weak',
             ]);
 
             $question = QuestionMultipleChoice::findOrFail($id);
@@ -70,8 +76,10 @@ class QuestionMultipleChoiceController extends Controller
             foreach ($validated['answers'] as $answerData) {
                 $question->answersMultipleChoice()->create([
                     'answer' => $answerData['answer'],
-                    'weight' => $answerData['weight'], // Adicionado o weight aqui
+                    'weight' => $answerData['weight'],
                     'diagnosis' => $answerData['diagnosis'],
+                    'strength_weakness_title' => $answerData['strength_weakness_title'] ?? null,
+                    'strength_weakness' => $answerData['strength_weakness'] ?? null,
                 ]);
             }
 

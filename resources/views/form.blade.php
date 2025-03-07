@@ -7,6 +7,8 @@
     <title>Formulário de Perguntas</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.7/jquery.inputmask.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -125,14 +127,16 @@
         let currentSection = 'questions'; // 'questions' ou 'multipleChoice'
         let questionCounter = 1;
 
-
+        $(document).ready(function() {
+            $('#phone').inputmask('(99) 99999-9999');
+        });
 
         function showQuestion(index) {
             currentSection = 'questions';
             const question = questions[index];
             questionContainer.innerHTML = `
     <div class="mb-4 opacity-0 transition-opacity duration-500">
-        <label for="question-${question.id}" class="block font-medium text-gray-100">${questionCounter}. ${question.question}</label>
+        <label for="question-${question.id}" class="block font-medium text-gray-100">${questionCounter} ${question.question}</label>
         ${question.answers.map(answer => `
             <div class="flex items-center">
                 <input type="radio" name="answers[${question.id}]" id="answer-${answer.id}" value="${answer.id}" class="mr-2" required>

@@ -59,35 +59,37 @@
         @endif
     </div>
 
-    <div id="editModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden overflow-y-auto">
-        <div class="bg-[#1E1E1E] p-6 rounded-lg shadow-lg max-w-4xl w-full mx-4 text-gray-100">
-            <h2 class="text-xl font-bold mb-4">Editar Pergunta</h2>
-            <form id="editForm">
-                @csrf
-                @method('PUT')
-                <input type="hidden" id="questionId" name="questionId">
-                <label class="block mb-2 text-gray-300" for="questionText">Pergunta:</label>
-                <input type="text" id="questionText" name="question"
-                       class="w-full p-2 bg-transparent rounded-md text-gray-100" required>
+    <div id="editModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black bg-opacity-50">
+        <div class="relative  min-h-screen flex items-center justify-center p-4">
+            <div class="bg-[#1E1E1E] p-6 rounded-lg shadow-lg max-w-4xl w-full mx-4 text-gray-100 max-h-full overflow-y-auto">
+                <h2 class="text-xl font-bold mb-4">Editar Pergunta</h2>
+                <form id="editForm">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="questionId" name="questionId">
+                    <label class="block mb-2 text-gray-300" for="questionText">Pergunta:</label>
+                    <input type="text" id="questionText" name="question"
+                           class="w-full p-2 bg-transparent rounded-md border border-gray-500 text-gray-100 focus:border-blue-500 outline-none" required>
 
-                <div class="mt-4">
-                    <h3 class="text-lg font-semibold mb-2">Respostas</h3>
-                    <div id="answersContainer">
+                    <div class="mt-4">
+                        <h3 class="text-lg font-semibold mb-2">Respostas</h3>
+                        <div id="answersContainer">
+                        </div>
+                        <button type="button" id="addAnswerButton"
+                                class="mt-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white transition duration-200">Adicionar Resposta
+                        </button>
                     </div>
-                    <button type="button" id="addAnswerButton"
-                            class="mt-2 bg-green-600 px-4 py-2 rounded-lg text-white">Adicionar Resposta
-                    </button>
-                </div>
 
-                <div class="mt-4 flex justify-end gap-2">
-                    <button type="button" id="cancelEditButton"
-                            class="border border-gray-500 px-4 py-2 rounded-lg text-gray-300">Cancelar
-                    </button>
-                    <button type="button" id="saveEditButton"
-                            class="border border-blue-500 bg-blue-600 px-4 py-2 rounded-lg text-white">Salvar
-                    </button>
-                </div>
-            </form>
+                    <div class="mt-4 flex justify-end gap-2">
+                        <button type="button" id="cancelEditButton"
+                                class="border border-gray-500 hover:border-gray-400 px-4 py-2 rounded-lg text-gray-300 transition duration-200">Cancelar
+                        </button>
+                        <button type="button" id="saveEditButton"
+                                class="border border-blue-500 hover:border-blue-400 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white transition duration-200">Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -219,7 +221,7 @@
                 fetch(`/questions/${questionId.value}`, { //URL CORRETO
                     method: 'POST', // POST com _method: PUT
                     headers: {
-                        'Content-Type': 'application/json', // ESSENCIALA
+                        'Content-Type': 'application/json', // ESSENCIAL
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify(payload) // Envia como JSON

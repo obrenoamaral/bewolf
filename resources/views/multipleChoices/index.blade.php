@@ -159,12 +159,12 @@
                         <textarea class="w-full p-2 bg-transparent rounded-md text-gray-100">${answer ? answer.diagnosis : ""}</textarea>
                     </div>
                     <div>
-                        <label class="block text-gray-300 mb-1">Título Força/Fraqueza:</label>
+                        <label class="block text-gray-300 mb-1">Título para tabela do Relatório</label>
                         <input type="text" value="${answer ? answer.strength_weakness_title : ""}" class="w-full p-2 bg-transparent rounded-md text-gray-100">
                     </div>
                     <div>
-                        <label class="block text-gray-300 mb-1">Força/Fraqueza:</label>
-                        <select class="w-full p-2 bg-transparent rounded-md text-gray-100">
+                        <label class="block text-gray-300 mb-1">Forte/Fraco</label>
+                        <select class="w-full p-2 bg-dark rounded-md text-gray-100">
                             <option value="">Selecione</option>
                             <option value="strong" ${answer && answer.strength_weakness === 'strong' ? 'selected' : ''}>Forte</option>
                             <option value="weak" ${answer && answer.strength_weakness === 'weak' ? 'selected' : ''}>Fraco</option>

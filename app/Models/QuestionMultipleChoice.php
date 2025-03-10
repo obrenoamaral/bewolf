@@ -15,4 +15,8 @@ class QuestionMultipleChoice extends Model
     {
         return $this->hasMany(AnswersMultipleChoice::class);
     }
+    public function clientAnswers() //Adicione se for usar
+    {
+        return $this->hasMany(ClientAnswer::class, 'question_multiple_choices_id');
+    }
 }

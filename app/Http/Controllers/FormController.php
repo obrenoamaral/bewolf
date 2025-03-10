@@ -6,6 +6,7 @@ use App\Models\Client;
 use App\Models\ClientAnswer;
 use App\Models\Question;
 use App\Models\QuestionMultipleChoice;
+use App\Models\AnswersMultipleChoice; // Certifique-se de que este modelo está importado
 use Illuminate\Http\Request;
 use App\Http\Controllers\DiagnosisController;
 use Illuminate\Support\Facades\DB;
@@ -44,54 +45,54 @@ class FormController extends Controller
                 ]);
             }
 
-            // 1. GERAR O SUBMISSION_ID
+            // Gerar um UUID para a submissão
             $submissionId = Str::uuid()->toString();
 
-            // 2. Salvar respostas simples
+            // Salvar respostas simples
             foreach ($answers as $questionId => $answerId) {
+                // Garantir que answer_id seja um inteiro
                 $answerId = is_array($answerId) ? (int) $answerId[0] : (int) $answerId;
 
-                ClientAnswer::create([ // Usar create, pois cada resposta é única por submissão
+                ClientAnswer::create([
                     'client_id' => $client->id,
                     'question_id' => $questionId,
                     'answer_id' => $answerId,
-                    'submission_id' => $submissionId, // ADICIONADO!
-                    'question_type' => 'normal', // ADICIONADO!
+                    'submission_id' => $submissionId, // Adicionando o UUID
                 ]);
             }
 
-            // 3. Salvar respostas de múltipla escolha (CORRIGIDO)
-            foreach ($multipleChoiceAnswers as $questionId => $answerId) {
+            // Salvar respostas de múltipla escolha
+            foreach ($multipleChoiceAnswers as $questionId => $answerIds) {
+                // Se $answerIds não for um array (caso apenas uma opção seja selecionada),
+                // transforme-o em um array.
+                $answerIds = is_array($answerIds) ? $answerIds : [$answerIds];
 
-                ClientAnswer::create([  // Usar create, pois cada resposta é única por submissão
-                    'client_id' => $client->id,
-                    'question_id' => $questionId,
-                    'answer_id' => $answerId, // Usar $answerId diretamente
-                    'submission_id' => $submissionId, // ADICIONADO!
-                    'question_type' => 'multiple_choice', // ADICIONADO!
-                ]);
+                foreach ($answerIds as $answerId) {
+                    // Certifique-se de que $answerId seja um inteiro.
+                    $answerId = (int) $answerId;
+
+                    // Crie o registro em ClientAnswer.
+                    ClientAnswer::create([
+                        'client_id' => $client->id,
+                        'submission_id' => $submissionId,
+                        'question_multiple_choices_id' => $questionId, // ID da pergunta de múltipla escolha
+                        'multiple_choice_answer_id' => $answerId,     // ID da resposta de múltipla escolha selecionada
+                        // question_id e answer_id devem ser NULL para respostas de múltipla escolha.
+                        'question_id' => null,
+                        'answer_id' => null,
+                    ]);
+                }
             }
 
             DB::commit();
 
-            // 4. Obtenha o submissionId MAIS RECENTE aqui, logo após salvar as respostas:
-            $lastSubmissionId = ClientAnswer::where('client_id', $client->id)
-                ->orderBy('created_at', 'desc')
-                ->value('submission_id');
-
-
-            // Geração do relatório (USANDO A OPÇÃO 1 - Passando o submission_id)
+            // Geração do relatório.  CORREÇÃO AQUI:
             $diagnosisController = new DiagnosisController();
-            $report = $diagnosisController->generateReport($client->id, $lastSubmissionId); // Passa o submissionId
-
-            if ($report === null) { //Verifica explicitamente se é null, para o caso da view de vazio
-                return view('reports.vazio');
-            }
+            $report = $diagnosisController->generateReport($client->id, $submissionId); // Passa $submissionId
 
             if (!$report) {
-                throw new \Exception('Falha ao gerar o relatório.'); // Lança uma exceção
+                throw new \Exception('Falha ao gerar o relatório.');
             }
-
 
             return response()->json([
                 'success' => true,
@@ -102,13 +103,9 @@ class FormController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Log::error('Erro ao enviar respostas: ' . $e->getMessage() . "\n" . $e->getTraceAsString()); // Log MAIS detalhado
+            \Log::error('Erro ao enviar respostas: ' . $e->getMessage());
 
-            // Retorna uma resposta JSON em caso de erro, para manter a consistência com AJAX
-            return response()->json([
-                'success' => false,
-                'message' => 'Ocorreu um erro ao enviar as respostas. Tente novamente mais tarde.'
-            ], 500); // 500 Internal Server Error
+            return redirect('/')->with('error', 'Ocorreu um erro ao enviar as respostas. Tente novamente mais tarde.');
         }
     }
 }

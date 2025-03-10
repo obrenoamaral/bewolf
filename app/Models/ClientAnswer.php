@@ -7,12 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class ClientAnswer extends Model
 {
+    // use HasFactory;  // Você não está usando HasFactory, então pode remover.
+
     protected $fillable = [
         'client_id',
         'question_id',
         'answer_id',
-        'submission_id', // Adicione o submission_id aqui
-        'question_type'
+        'submission_id',
+        'question_multiple_choices_id', // ADICIONADO!
+        'multiple_choice_answer_id',  // ADICIONADO!
     ];
 
     public function client()
@@ -30,4 +33,13 @@ class ClientAnswer extends Model
         return $this->belongsTo(Answer::class);
     }
 
+    public function questionMultipleChoice()
+    {
+        return $this->belongsTo(QuestionMultipleChoice::class, 'question_multiple_choices_id');
+    }
+
+    public function multipleChoiceAnswer()
+    {
+        return $this->belongsTo(AnswersMultipleChoice::class, 'multiple_choice_answer_id');
+    }
 }

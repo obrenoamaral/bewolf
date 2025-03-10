@@ -4,21 +4,23 @@
     <meta charset="UTF-8">
     <title>Relatório de Diagnóstico</title>
     <style>
+        /* (Seus estilos - Sem grandes alterações) */
         @page {
             size: A4;
-            margin: 20mm 5mm 15mm 5mm; /* Margens superior, direita, inferior, esquerda */
+            margin: 20mm 5mm 15mm 5mm;
         }
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             font-size: 10pt;
-            line-height: 1; /* Espaçamento entre linhas */
+            line-height: 1.2;
         }
         .page-break {
             page-break-after: always;
         }
         .container {
             width: 100%;
-            max-width: 100%; /* Garante que o conteúdo não ultrapasse as margens */
+            max-width: 100%;
+            box-sizing: border-box;
         }
         table {
             width: 100%;
@@ -27,6 +29,7 @@
         th, td {
             border: 1pt solid black;
             padding: 8pt;
+            text-align: left;
         }
         .text-center {
             text-align: center;
@@ -34,54 +37,26 @@
         .font-bold {
             font-weight: bold;
         }
+
         .mt-2 { margin-top: 0.5rem; }
         .mt-4 { margin-top: 1rem; }
         .mt-6 { margin-top: 1.5rem; }
-        .mt-8 { margin-top: 2rem; }
-        .mt-10 { margin-top: 2.5rem; }
         .mb-20 { margin-bottom: 5rem;}
         .mb-40 { margin-bottom: 10rem;}
         .mx-auto { margin-left: auto; margin-right: auto; }
-        .w-96 { width: 24rem;}
         .w-2-3 { width: 66.666667%; }
         .w-1-2 { width: 50%; }
         .w-1-3 { width: 33.333333%;}
-        .p-1 { padding: 0.25rem; }
-        .p-2 { padding: 0.5rem; }
-        .p-4 { padding: 1rem; }
-        .p-8 { padding: 2rem; }
         .text-white { color: white; }
-        .text-black { color: black; }
-        .text-lg { font-size: 1.125rem; /* 18px */}
-        .text-md { font-size: 1rem; /* 16px */}
-        .text-2xl { font-size: 1.5rem; /* 24px */}
-        .text-base { font-size: 1rem;}
-        .text-gray-800 { color: #1f2937; }
-        .text-gray-900 { color: #111827; }
-        .text-gray-700 { color: #374151; }
-        .bg-black { background-color: black;}
-        .bg-gray-600 { background-color: #4b5563; }
         .bg-green-500 { background-color: #22c55e; }
         .bg-red-500 { background-color: #ef4444; }
         .bg-blue-500 { background-color: #3b82f6; }
-        .border { border: 1pt solid black;}
-        .border-gray-300 { border: 1pt solid #d1d5db;}
-        .border-gray-600 { border: 1pt solid #4b5563;}
-        .rounded-t { border-top-left-radius: 0.25rem; border-top-right-radius: 0.25rem; }
-        .font-semibold { font-weight: 600; }
-        .my-5 { margin-top: 1.25rem; margin-bottom: 1.25rem; }
-        .space-y-2 > :not([hidden]) ~ :not([hidden]) { --tw-space-y-reverse: 0; margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse))); margin-bottom: calc(0.5rem * var(--tw-space-y-reverse)); }
-        .flex { display: flex;}
-        .items-center { align-items: center;}
-        .justify-center { justify-content: center;}
-        .flex-col { flex-direction: column;}
-
-
     </style>
 </head>
 <body style="margin: 15mm 5mm 15mm 5mm;">
 
-<div class="container page-break" style="padding: 8pt; width: 100%; box-sizing: border-box;">
+<div class="container page-break" style="padding: 8pt;">
+    {{-- (Cabeçalho e primeira tabela - Sem alterações) --}}
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
         <header style="width: 100%; text-align: center;">
             <img src="{{ public_path('logo-preto.png') }}" alt="Logotipo BeWolf" style="width: 24rem; margin-bottom: 10rem; display: block; margin-left: auto; margin-right: auto;">
@@ -93,26 +68,26 @@
     </div>
 </div>
 
-<main class="container" >
+<main class="container">
     <section class="table-section">
-
         <table role="table">
             <thead>
-            <div style="text-align: center; border: 1px solid black; border-bottom: 0px; padding-bottom: 1px" >
-                <p style="font-size: 1em; font-weight: bold;">MAPEAMENTO DE DIAGNÓSTICO EMPRESARIAL</p>
-            </div>
+            <tr>
+                <th colspan="2" style="text-align: center; border: 1px solid black; border-bottom: 0px; padding-bottom: 1px; font-size: 1em; font-weight: bold;">MAPEAMENTO DE DIAGNÓSTICO EMPRESARIAL</th>
+            </tr>
             </thead>
             <tbody>
-            @foreach($orderedPoints as $data)
+            {{-- Um único loop para todas as respostas --}}
+            @foreach($allPoints as $data)
                 <tr style="border: 1pt solid black;">
                     <td style="padding: 0.5rem; width: 66.666667%;">{{ $data['question'] }}</td>
                     <td style="padding: 0.5rem; width: 33.333333%;
-                    @if(!empty($data['answer']))
-                        background-color: #4b5563; color: white;
-                    @else
-                        background-color: #f2f2f2;
-                    @endif
-                    text-align: center;">
+                        @if(!empty($data['answer']))
+                            background-color: #4b5563; color: white;
+                        @else
+                            background-color: #f2f2f2; /* Cor para N/A */
+                        @endif
+                        text-align: center;">
                         {{ $data['answer'] ?: 'N/A' }}
                     </td>
                 </tr>
@@ -123,18 +98,11 @@
 
     <section class="diagnosis-result page-break">
         <?php
-        $bgColor = 'bg-green-500'; // Tailwind class - will be ignored
-        if (strpos($diagnosisResult['name'], 'Empreendedor Extintor') !== false) {
-            $bgColor = 'bg-red-500';  // Tailwind class - will be ignored
-        } elseif (strpos($diagnosisResult['name'], 'Empreendedor Sobrecarregado') !== false) {
-            $bgColor = 'bg-blue-500';  // Tailwind class - will be ignored
-        }
-
-        // Convert Tailwind classes to inline styles
+        // Lógica para a cor de fundo (mantida)
         $bgColorStyle = 'background-color: #22c55e;'; // Default green
-        if ($bgColor === 'bg-red-500') {
+        if (strpos($diagnosisResult['name'], 'Empreendedor Extintor') !== false) {
             $bgColorStyle = 'background-color: #ef4444;'; // Red
-        } elseif ($bgColor === 'bg-blue-500') {
+        } elseif (strpos($diagnosisResult['name'], 'Empreendedor Sobrecarregado') !== false) {
             $bgColorStyle = 'background-color: #3b82f6;'; // Blue
         }
         ?>
@@ -145,6 +113,7 @@
         </div>
     </section>
 
+    {{-- ÚNICA seção de análise de pontos fortes/fracos --}}
     <section class="analysis page-break" style="margin-top: 2.5rem;">
         <div style="border: 1px solid;">
             <h3 style="text-align: center; font-size: 1em" >ANÁLISE DE POTENCIAIS PONTOS FORTES E OPORTUNIDADES DE DESENVOLVIMENTO</h3>
@@ -157,16 +126,17 @@
             </tr>
             </thead>
             <tbody>
-            @foreach ($orderedPoints as $point)
+            {{-- Um único loop, usando _source para diferenciar --}}
+            @foreach ($allPoints as $point)
                 @if (isset($point['strength_weakness_title']) && $point['strength_weakness_title'] !== '' && isset($point['strength_weakness']) && $point['strength_weakness'] !== '')
                     <tr style="border: 1pt solid #d1d5db;">
                         @if ($point['strength_weakness'] === 'strong')
                             <td style="padding: 0.5rem; border: 1pt solid #d1d5db;">
                                 <strong style="font-weight: bold;">{{ $point['strength_weakness_title'] }}</strong>
                             </td>
-                            <td style="padding: 0.5rem; border: 1pt solid #d1d5db;"></td>
+                            <td style="padding: 0.5rem; border: 1pt solid #d1d5db;"></td> {{-- Célula vazia --}}
                         @else
-                            <td style="padding: 0.5rem; border: 1pt solid #d1d5db;"></td>
+                            <td style="padding: 0.5rem; border: 1pt solid #d1d5db;"></td> {{-- Célula vazia --}}
                             <td style="padding: 0.5rem; border: 1pt solid #d1d5db;">
                                 <strong style="font-weight: bold;">{{ $point['strength_weakness_title'] }}</strong>
                             </td>
@@ -182,9 +152,9 @@
         <div style="border: 1px solid; margin-top: 1em;">
             <h3 style="font-weight: bold; text-align: center; font-size: 1em">ANÁLISES GERAIS DA EMPRESA E EMPREENDEDOR</h3>
         </div>
-        {{-- Seção de Análises Gerais --}}
-        @foreach ($orderedPoints as $point)
-            @if ($point['question_type'] === 'multiple_choice')
+        {{--Seção para apresentar o diagnostico das questões de múltipla escolha--}}
+        @foreach ($allPoints as $point)
+            @if(isset($point['_source']) && $point['_source'] === 'multiple_choice')
                 <div style="margin-bottom: 1rem;">
                     <p style="font-weight: bold;">{{ $point['diagnosis_title'] }}</p>
                     <p>{{ $point['diagnosis'] }}</p>
@@ -197,8 +167,9 @@
         <div style="border: 1px solid;">
             <h3 style="text-align: center; font-size: 1em; ">DETALHAMENTO DO DIAGNÓSTICO</h3>
         </div>
-        @foreach($orderedPoints as $data)
-            @if(isset($data['solution']) && $data['solution'] != '')
+        {{-- Apenas para respostas SIMPLES com solução --}}
+        @foreach($allPoints as $data)
+            @if(isset($data['_source']) && $data['_source'] === 'simple' && isset($data['solution']) && $data['solution'] != '')
                 <div style="margin-top: 1.5rem;">
                     <h2 style="font-size: 1rem; font-weight: 600;">{{ $data['diagnosis_title'] }}</h2>
                     <p style="margin-top: 0.5rem;"><span style="font-weight: bold;">Diagnóstico:</span></p>
@@ -207,13 +178,13 @@
                     <p style="word-wrap: break-word;">{{ $data['solution'] }}</p>
                 </div>
             @endif
-
         @endforeach
 
     </section>
 </main>
 
 <footer class="container page-break">
+    {{-- (Rodapé - sem alterações) --}}
     <div style="display:flex; flex-direction: column; items-center; justify-content: center; height: 100vh;" class="text-center">
         <p style="font-size: 1.125rem; font-weight: 600; color: #1f2937; text-align: center; margin-bottom: 20pt">
             Caso queira potencializar os resultados da sua empresa e alcançar seus objetivos de forma mais rápida e mais preparada,

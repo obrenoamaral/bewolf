@@ -35,7 +35,6 @@ Route::middleware(['auth'])->group(function () {
     // Clientes
     Route::prefix('clients')->group(function () {
         Route::get('/', [ClientController::class, 'index'])->name('clients.index');
-        Route::post('/store', [ClientController::class, 'store'])->name('clients.store');
         Route::get('/export', function () {
             return Excel::download(new ClientsExport, 'clients.xlsx');
         })->name('clients.export');

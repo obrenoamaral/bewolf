@@ -7,6 +7,7 @@ use App\Models\Answer;
 use App\Models\Client;
 use App\Models\ClientAnswer;
 use App\Models\EmailContent;
+use App\Models\QuestionMultipleChoice; // Importe o modelo QuestionMultipleChoice
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Spatie\LaravelPdf\Facades\Pdf;
@@ -16,6 +17,7 @@ class DiagnosisController extends Controller
     public function calculateDiagnosis($totalWeight)
     {
         // ... (código da função calculateDiagnosis - sem alterações) ...
+        // (O código da função calculateDiagnosis permanece o mesmo)
         $diagnoses = [
             'empreendedorExtintor' => [
 
@@ -58,51 +60,93 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
         }
     }
 
-    // Função auxiliar para buscar as respostas (evita duplicação) - CORRIGIDA
-    private function getClientAnswers($clientId, $submissionId)
+    // Função auxiliar para buscar respostas SIMPLES (mantida, mas agora com nome mais claro)
+    private function getSimpleClientAnswers($clientId, $submissionId)
     {
-        return ClientAnswer::with(['question', 'answer']) // Carrega 'question' e 'answer'
+        return ClientAnswer::with(['question', 'answer'])
+            ->where('client_id', $clientId)
+            ->where('submission_id', $submissionId)
+            ->whereNotNull('question_id') // Modificado para buscar apenas as que tem question_id
+            ->get();
+    }
+
+
+    // Nova função para buscar respostas de MÚLTIPLA ESCOLHA
+    private function getMultipleChoiceClientAnswers($clientId, $submissionId)
+    {
+        return ClientAnswer::with(['multipleChoiceAnswer.questionMultipleChoice']) // Eager load completo
         ->where('client_id', $clientId)
             ->where('submission_id', $submissionId)
+            ->whereNull('question_id') // Busca apenas respostas de múltipla escolha (question_id é NULL)
             ->get();
     }
 
     public function generateReport($client_id, $submission_id)
     {
-        $clientAnswers = $this->getClientAnswers($client_id, $submission_id);
+        // Busca respostas SIMPLES
+        $simpleAnswers = $this->getSimpleClientAnswers($client_id, $submission_id);
 
-        if ($clientAnswers->isEmpty()) {
+        // Busca respostas de MÚLTIPLA ESCOLHA
+        $multipleChoiceAnswers = $this->getMultipleChoiceClientAnswers($client_id, $submission_id);
+
+        if ($simpleAnswers->isEmpty() && $multipleChoiceAnswers->isEmpty()) {
             return null; // Tratamento para relatório vazio
         }
 
-        $orderedPoints = [];
+        $allPoints = []; // Um único array
 
-        foreach ($clientAnswers as $clientAnswer) {
-            // Use optional() para evitar erros se question ou answer forem nulos
-            $questionText = optional($clientAnswer->question)->question;
-            $answerText = optional($clientAnswer->answer)->answer;
-            $diagnosisTitle = optional($clientAnswer->question)->diagnosis_title;
-            $diagnosisText = optional($clientAnswer->answer)->diagnosis;
-            $solutionText = optional($clientAnswer->answer)->solution;
-            $strengthWeaknessTitle = optional($clientAnswer->answer)->strength_weakness_title;
-            $strengthWeaknessText = optional($clientAnswer->answer)->strength_weakness;
-
-            // ADICIONA 'question_type' ao array, SEMPRE
-            $orderedPoints[] = [
-                'question' => $questionText,
-                'answer' => $answerText,
-                'diagnosis_title' => $diagnosisTitle,
-                'diagnosis' => $diagnosisText,
-                'solution' => $solutionText,
-                'strength_weakness_title' => $strengthWeaknessTitle,
-                'strength_weakness' => $strengthWeaknessText,
-                'question_type' => $clientAnswer->question_type, // SEMPRE presente
+        // Adiciona PRIMEIRO as respostas SIMPLES
+        foreach ($simpleAnswers as $clientAnswer) {
+            $allPoints[] = [
+                'question' => optional($clientAnswer->question)->question,
+                'answer' => optional($clientAnswer->answer)->answer,
+                'diagnosis_title' => optional($clientAnswer->question)->diagnosis_title,
+                'diagnosis' => optional($clientAnswer->answer)->diagnosis,
+                'solution' => optional($clientAnswer->answer)->solution,
+                'strength_weakness_title' => optional($clientAnswer->answer)->strength_weakness_title,
+                'strength_weakness' => optional($clientAnswer->answer)->strength_weakness,
+                '_source' => 'simple', // Chave para diferenciar (ainda útil na view)
             ];
         }
 
-        $totalWeight = $clientAnswers->sum(function ($clientAnswer) {
+        // Adiciona DEPOIS as respostas de MÚLTIPLA ESCOLHA
+        foreach ($multipleChoiceAnswers as $clientAnswer) {
+            $answer = $clientAnswer->multipleChoiceAnswer;  // Use o relacionamento!
+
+            if ($answer) {
+                $question = $answer->questionMultipleChoice;
+                $allPoints[] = [
+                    'question' => optional($question)->question_title,
+                    'answer' => optional($answer)->answer,
+                    'diagnosis_title' => optional($question)->solution_title,
+                    'diagnosis' => optional($answer)->diagnosis,
+                    'solution' => '',  // Sem solução
+                    'strength_weakness_title' => optional($answer)->strength_weakness_title,
+                    'strength_weakness' => optional($answer)->strength_weakness,
+                    '_source' => 'multiple_choice', // Chave para diferenciar
+                ];
+            } else {
+                \Log::warning("Resposta de múltipla escolha não encontrada para ClientAnswer ID: " . $clientAnswer->id);
+            }
+
+        }
+
+        // Ordenação por 'diagnosis_title' (OPCIONAL, mas recomendado)
+        usort($allPoints, function ($a, $b) {
+            return strcmp($a['diagnosis_title'], $b['diagnosis_title']);
+        });
+
+
+        // Cálculo do peso total (mantido)
+        $totalWeightSimple = $simpleAnswers->sum(function ($clientAnswer) {
             return $clientAnswer->answer ? $clientAnswer->answer->weight : 0;
         });
+
+        $totalWeightMultipleChoice = $multipleChoiceAnswers->sum(function ($clientAnswer) {
+            return $clientAnswer->multipleChoiceAnswer ? $clientAnswer->multipleChoiceAnswer->weight : 0; // Usar o relacionamento
+        });
+
+        $totalWeight = $totalWeightSimple + $totalWeightMultipleChoice;
 
         $diagnosisResult = $this->calculateDiagnosis($totalWeight);
 
@@ -110,7 +154,7 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
         $pdfStorage = storage_path('app/public/' . $fileName);
 
         try {
-            Pdf::view('reports.index', compact('totalWeight', 'diagnosisResult', 'orderedPoints'))
+            Pdf::view('reports.index', compact('totalWeight', 'diagnosisResult', 'allPoints'))
                 ->save($pdfStorage);
 
             $this->sendReportByEmail($client_id, $submission_id, $pdfStorage);
@@ -123,11 +167,16 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
         }
     }
 
-
+    // ... (código de sendReportByEmail - sem alterações) ...
     public function sendReportByEmail($client_id, $submission_id, $pdfStorage)
     {
         $client = Client::findOrFail($client_id);
         $emailContent = EmailContent::first(); // Você pode buscar configurações de e-mail do banco de dados
+
+        if (!$emailContent) {
+            \Log::error("Conteúdo do e-mail não encontrado ao tentar enviar relatório para o cliente $client_id.");
+            return;
+        }
 
         $fixedEmail = 'contato@bwolf.com.br'; // E-mail fixo para cópia
 
@@ -136,55 +185,73 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
             ->send(new ReportMail($client, $pdfStorage, $emailContent)); // Passa $pdfStorage para o ReportMail
     }
 
-
-    public function previewReport($client_id, $submission_id) // Recebe $submission_id
+    public function previewReport($client_id, $submission_id)
     {
-        try {
-            $clientAnswers = $this->getClientAnswers($client_id, $submission_id);
+        // Busca respostas SIMPLES
+        $simpleAnswers = $this->getSimpleClientAnswers($client_id, $submission_id);
 
-            if ($clientAnswers->isEmpty()) {
-                return view('reports.vazio'); //Retorna view de relatório vazio
-            }
+        // Busca respostas de MÚLTIPLA ESCOLHA
+        $multipleChoiceAnswers = $this->getMultipleChoiceClientAnswers($client_id, $submission_id);
 
-            $orderedPoints = [];
-
-            foreach ($clientAnswers as $clientAnswer) {
-                $questionText = optional($clientAnswer->question)->question;
-                $answerText = optional($clientAnswer->answer)->answer;
-                $diagnosisTitle = optional($clientAnswer->question)->diagnosis_title;
-                $diagnosisText = optional($clientAnswer->answer)->diagnosis;
-                $solutionText = optional($clientAnswer->answer)->solution;
-                $strengthWeaknessTitle = optional($clientAnswer->answer)->strength_weakness_title;
-                $strengthWeaknessText = optional($clientAnswer->answer)->strength_weakness;
-
-                // ADICIONA 'question_type' ao array, SEMPRE
-                $orderedPoints[] = [
-                    'question' => $questionText,
-                    'answer' => $answerText,
-                    'diagnosis_title' => $diagnosisTitle,
-                    'diagnosis' => $diagnosisText,
-                    'solution' => $solutionText,
-                    'strength_weakness_title' => $strengthWeaknessTitle,
-                    'strength_weakness' => $strengthWeaknessText,
-                    'question_type' => $clientAnswer->question_type, // SEMPRE presente
-                ];
-
-            }
-
-            $totalWeight = $clientAnswers->sum(function ($clientAnswer) {
-                return $clientAnswer->answer ? $clientAnswer->answer->weight : 0;
-            });
-
-
-            $diagnosisResult = $this->calculateDiagnosis($totalWeight);
-            $client = Client::findOrFail($client_id);
-            // CORREÇÃO AQUI: Passe apenas o que é necessario
-            return view('reports.index', compact('totalWeight', 'diagnosisResult', 'orderedPoints', 'client'));
-
-
-        } catch (\Exception $e) {
-            \Log::error("Erro ao pré-visualizar relatório para o cliente $client_id, submissão $submission_id: " . $e->getMessage() . "\n" . $e->getTraceAsString());
-            return back()->with('error', 'Erro ao pré-visualizar o relatório. Verifique os logs para mais detalhes.');
+        if ($simpleAnswers->isEmpty() && $multipleChoiceAnswers->isEmpty()) {
+            return view('reports.vazio');
         }
+
+        $allPoints = []; // Um único array
+
+        // Adiciona PRIMEIRO as respostas SIMPLES
+        foreach ($simpleAnswers as $clientAnswer) {
+            $allPoints[] = [
+                'question' => optional($clientAnswer->question)->question,
+                'answer' => optional($clientAnswer->answer)->answer,
+                'diagnosis_title' => optional($clientAnswer->question)->diagnosis_title,
+                'diagnosis' => optional($clientAnswer->answer)->diagnosis,
+                'solution' => optional($clientAnswer->answer)->solution,
+                'strength_weakness_title' => optional($clientAnswer->answer)->strength_weakness_title,
+                'strength_weakness' => optional($clientAnswer->answer)->strength_weakness,
+                '_source' => 'simple', // Chave para diferenciar (ainda útil na view)
+            ];
+        }
+
+        // Adiciona DEPOIS as respostas de MÚLTIPLA ESCOLHA
+        foreach ($multipleChoiceAnswers as $clientAnswer) {
+            $answer = $clientAnswer->multipleChoiceAnswer;  // Use o relacionamento!
+
+            if ($answer) {
+                $question = $answer->questionMultipleChoice;
+                $allPoints[] = [
+                    'question' => optional($question)->question_title,
+                    'answer' => optional($answer)->answer,
+                    'diagnosis_title' => optional($question)->solution_title,
+                    'diagnosis' => optional($answer)->diagnosis,
+                    'solution' => '',  // Sem solução
+                    'strength_weakness_title' => optional($answer)->strength_weakness_title,
+                    'strength_weakness' => optional($answer)->strength_weakness,
+                    '_source' => 'multiple_choice', // Chave para diferenciar
+                ];
+            } else {
+                \Log::warning("Resposta de múltipla escolha não encontrada para ClientAnswer ID: " . $clientAnswer->id);
+            }
+        }
+
+        // REMOVE A CHAMADA usort() !!!
+        // usort($allPoints, function ($a, $b) { ... });  // REMOVA ISSO!
+
+        // ... (resto do código - cálculo do peso, etc. - SEM ALTERAÇÕES) ...
+        $totalWeightSimple = $simpleAnswers->sum(function ($clientAnswer) {
+            return $clientAnswer->answer ? $clientAnswer->answer->weight : 0;
+        });
+
+        $totalWeightMultipleChoice = $multipleChoiceAnswers->sum(function ($clientAnswer) {
+            return $clientAnswer->multipleChoiceAnswer ? $clientAnswer->multipleChoiceAnswer->weight : 0;
+        });
+
+        $totalWeight = $totalWeightSimple + $totalWeightMultipleChoice;
+
+        $diagnosisResult = $this->calculateDiagnosis($totalWeight);
+        $client = Client::findOrFail($client_id);
+
+        // Passa $allPoints para a view
+        return view('reports.index', compact('totalWeight', 'diagnosisResult', 'allPoints', 'client'));
     }
 }

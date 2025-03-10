@@ -42,6 +42,7 @@ class FormController extends Controller
                     'company' => $request->input('company'),
                     'email' => $request->input('email'),
                     'phone' => $request->input('phone'),
+                    'como_chegou' => $request->input('como_chegou'), // Adicionado aqui
                 ]);
             }
 

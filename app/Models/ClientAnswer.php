@@ -7,7 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class ClientAnswer extends Model
 {
-    protected $fillable = ['client_id', 'question_id', 'answer_id', 'question_multiple_choices_id', 'multiple_choice_answer_id'];
+    protected $fillable = [
+        'client_id',
+        'question_id',
+        'answer_id',
+        'submission_id', // Adicione o submission_id aqui
+        'question_type'
+    ];
 
     public function client()
     {
@@ -24,13 +30,4 @@ class ClientAnswer extends Model
         return $this->belongsTo(Answer::class);
     }
 
-    public function questionMultipleChoice()
-    {
-        return $this->belongsTo(QuestionMultipleChoice::class, 'question_multiple_choices_id');
-    }
-
-    public function answerMultipleChoice()
-    {
-        return $this->belongsTo(AnswersMultipleChoice::class, 'multiple_choice_answer_id');
-    }
 }

@@ -43,8 +43,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Diagnóstico
     Route::prefix('diagnosis')->group(function () {
-        Route::get('/{client_id}/report', [DiagnosisController::class, 'generateReport']);
-        Route::get('/{client_id}/calculate', [DiagnosisController::class, 'calculateDiagnosis']);
+        Route::get('/{client_id}/report/{submission_id}', [DiagnosisController::class, 'generateReport']); // COM submission_id
+        Route::get('/{client_id}/calculate', [DiagnosisController::class, 'calculateDiagnosis']); // Não usada
     });
 
     // Perfil do usuário
@@ -55,8 +55,8 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Enviar relatório por e-mail
-    Route::post('/send-report/{client_id}', [DiagnosisController::class, 'sendReportByEmail']);
-    Route::get('/report/preview/{client_id}', [DiagnosisController::class, 'previewReport']);
+    Route::post('/send-report/{client_id}/{submission_id}', [DiagnosisController::class, 'sendReportByEmail']); // COM submission_id
+    Route::get('/report/preview/{client_id}/{submission_id}', [DiagnosisController::class, 'previewReport']); // COM submission_id
 
     // Email (conteúdo de e-mail)
     Route::prefix('email')->group(function () {

@@ -98,9 +98,9 @@
 
         <table role="table">
             <thead>
-                <div style="text-align: center; border: 1px solid black; border-bottom: 0px; padding-bottom: 1px" >
-                    <p style="font-size: 1em; font-weight: bold;">MAPEAMENTO DE DIAGNÓSTICO EMPRESARIAL</p>
-                </div>
+            <div style="text-align: center; border: 1px solid black; border-bottom: 0px; padding-bottom: 1px" >
+                <p style="font-size: 1em; font-weight: bold;">MAPEAMENTO DE DIAGNÓSTICO EMPRESARIAL</p>
+            </div>
             </thead>
             <tbody>
             @foreach($orderedPoints as $data)
@@ -115,6 +115,7 @@
                     text-align: center;">
                         {{ $data['answer'] ?: 'N/A' }}
                     </td>
+                </tr>
             @endforeach
             </tbody>
         </table>
@@ -157,7 +158,7 @@
             </thead>
             <tbody>
             @foreach ($orderedPoints as $point)
-                @if ($point['strength_weakness_title'] !== '' && $point['strength_weakness'] !== '')
+                @if (isset($point['strength_weakness_title']) && $point['strength_weakness_title'] !== '' && isset($point['strength_weakness']) && $point['strength_weakness'] !== '')
                     <tr style="border: 1pt solid #d1d5db;">
                         @if ($point['strength_weakness'] === 'strong')
                             <td style="padding: 0.5rem; border: 1pt solid #d1d5db;">
@@ -181,11 +182,13 @@
         <div style="border: 1px solid; margin-top: 1em;">
             <h3 style="font-weight: bold; text-align: center; font-size: 1em">ANÁLISES GERAIS DA EMPRESA E EMPREENDEDOR</h3>
         </div>
-
-        @foreach ($multipleChoiceAnswers as $answer)
-            <p style="font-weight: bold;">{{ $answer->questionMultipleChoice->solution_title }}</p>
-            @if ($answer->answerMultipleChoice)
-                <p> {{ $answer->answerMultipleChoice->diagnosis }}</p>
+        {{-- Seção de Análises Gerais --}}
+        @foreach ($orderedPoints as $point)
+            @if ($point['question_type'] === 'multiple_choice')
+                <div style="margin-bottom: 1rem;">
+                    <p style="font-weight: bold;">{{ $point['diagnosis_title'] }}</p>
+                    <p>{{ $point['diagnosis'] }}</p>
+                </div>
             @endif
         @endforeach
     </section>
@@ -195,14 +198,14 @@
             <h3 style="text-align: center; font-size: 1em; ">DETALHAMENTO DO DIAGNÓSTICO</h3>
         </div>
         @foreach($orderedPoints as $data)
-            @if($data['solution'] != '')
-            <div style="margin-top: 1.5rem;">
-                <h2 style="font-size: 1rem; font-weight: 600;">{{ $data['diagnosis_title'] }}</h2>
-                <p style="margin-top: 0.5rem;"><span style="font-weight: bold;">Diagnóstico:</span></p>
-                <p style="word-wrap: break-word;">{{ $data['diagnosis'] }}</p>
-                <p style="margin-top: 0.5rem;"><span style="font-weight: bold;">Solução:</span></p>
-                <p style="word-wrap: break-word;">{{ $data['solution'] }}</p>
-            </div>
+            @if(isset($data['solution']) && $data['solution'] != '')
+                <div style="margin-top: 1.5rem;">
+                    <h2 style="font-size: 1rem; font-weight: 600;">{{ $data['diagnosis_title'] }}</h2>
+                    <p style="margin-top: 0.5rem;"><span style="font-weight: bold;">Diagnóstico:</span></p>
+                    <p style="word-wrap: break-word;">{{ $data['diagnosis'] }}</p>
+                    <p style="margin-top: 0.5rem;"><span style="font-weight: bold;">Solução:</span></p>
+                    <p style="word-wrap: break-word;">{{ $data['solution'] }}</p>
+                </div>
             @endif
 
         @endforeach

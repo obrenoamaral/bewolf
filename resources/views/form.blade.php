@@ -176,16 +176,16 @@
             const question = questions[index];
 
             questionContainer.innerHTML = `
-            <div class="mb-4 opacity-0 transition-opacity duration-500">
-                <label for="question-<span class="math-inline">\{question\.id\}" class\="block font\-medium text\-gray\-100"\></span>{questionCounter}. ${question.question}</label>
-                ${question.answers.map(answer => `
-                    <div class="flex items-center">
-                        <input type="radio" name="answers[${question.id}]" id="answer-${answer.id}" value="${answer.id}" class="mr-2" required>
-                        <label for="answer-${answer.id}" class="text-gray-100">${answer.answer}</label>
-                    </div>
-                `).join('')}
-            </div>
-        `;
+        <div class="mb-4 opacity-0 transition-opacity duration-500">
+            <label for="question-${question.id}" class="block font-medium text-gray-100">${questionCounter}. ${question.question}</label>
+            ${question.answers.map(answer => `
+                <div class="flex items-center">
+                    <input type="radio" name="answers[${question.id}]" id="answer-${answer.id}" value="${answer.id}" class="mr-2" required>
+                    <label for="answer-${answer.id}" class="text-gray-100">${answer.answer}</label>
+                </div>
+            `).join('')}
+        </div>
+    `;
 
             const questionElement = questionContainer.querySelector('div');
             setTimeout(() => questionElement.classList.add('opacity-100'), 10);

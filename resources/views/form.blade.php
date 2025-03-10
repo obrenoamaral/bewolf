@@ -63,6 +63,9 @@
 <div class="bg-black opacity-80 h-screen flex items-center justify-center hidden transition-opacity duration-500"
      id="questionScreen">
     <div class="max-w-4xl w-full p-8">
+        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+            <div class="bg-blue-600 h-2.5 rounded-full" id="progressBar" style="width: 0%"></div>
+        </div>
         <form id="questionForm">
             @csrf
             <div id="questionContainer"></div>
@@ -148,40 +151,48 @@
 
         const questions = @json($questions);
         const multipleChoiceQuestions = @json($multipleChoiceQuestions);
-        const answers = {}; // Objeto para armazenar as respostas das perguntas normais
-        const multipleChoiceAnswers = {}; // Objeto para armazenar as respostas de múltipla escolha
-
+        const answers = {};
+        const multipleChoiceAnswers = {};
 
         let currentQuestionIndex = 0;
         let currentMultipleChoiceIndex = 0;
-        let currentSection = 'questions'; // 'questions' ou 'multipleChoice'
-        let questionCounter = 1; // Inicializa o contador
+        let currentSection = 'questions';
+        let questionCounter = 1;
 
         $(document).ready(function () {
             $('#phone').inputmask('(99) 99999-9999');
         });
+
+        const progressBar = document.getElementById('progressBar');
+        const totalQuestions = questions.length + multipleChoiceQuestions.length;
+
+        function updateProgressBar() {
+            const progress = ((currentQuestionIndex + currentMultipleChoiceIndex + 1) / totalQuestions) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
 
         function showQuestion(index) {
             currentSection = 'questions';
             const question = questions[index];
 
             questionContainer.innerHTML = `
-    <div class="mb-4 opacity-0 transition-opacity duration-500">
-        <label for="question-${question.id}" class="block font-medium text-gray-100">${questionCounter}. ${question.question}</label>
-        ${question.answers.map(answer => `
-        <div class="flex items-center">
-            <input type="radio" name="answers[${question.id}]" id="answer-${answer.id}" value="${answer.id}" class="mr-2" required>
-            <label for="answer-${answer.id}" class="text-gray-100">${answer.answer}</label>
-        </div>
-        `).join('')}
-    </div>
-    `;
+            <div class="mb-4 opacity-0 transition-opacity duration-500">
+                <label for="question-<span class="math-inline">\{question\.id\}" class\="block font\-medium text\-gray\-100"\></span>{questionCounter}. ${question.question}</label>
+                ${question.answers.map(answer => `
+                    <div class="flex items-center">
+                        <input type="radio" name="answers[${question.id}]" id="answer-${answer.id}" value="${answer.id}" class="mr-2" required>
+                        <label for="answer-${answer.id}" class="text-gray-100">${answer.answer}</label>
+                    </div>
+                `).join('')}
+            </div>
+        `;
 
             const questionElement = questionContainer.querySelector('div');
             setTimeout(() => questionElement.classList.add('opacity-100'), 10);
             questionContainer.classList.remove('hidden');
             multipleChoiceContainer.classList.add('hidden');
             toggleButtons();
+            updateProgressBar();
         }
 
         function showMultipleChoiceQuestion(index) {
@@ -194,16 +205,16 @@
             }
 
             multipleChoiceContainer.innerHTML = `
-    <div class="mb-6 opacity-0 transition-opacity duration-500">
-        <p class="font-semibold mb-2 text-gray-100">${questionCounter}. ${question.question_title}</p>
-        ${question.answers_multiple_choice.map(answer => `
-        <label class="block mb-2 text-gray-100">
-            <input type="radio" name="multiple_choice_answers[${question.id}]" value="${answer.id}" class="form-radio h-4 w-4 text-black border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-200">
-            ${answer.answer}
-        </label>
-        `).join('')}
-    </div>
-    `;
+            <div class="mb-6 opacity-0 transition-opacity duration-500">
+                <p class="font-semibold mb-2 text-gray-100">${questionCounter}. ${question.question_title}</p>
+                ${question.answers_multiple_choice.map(answer => `
+                    <label class="block mb-2 text-gray-100">
+                        <input type="radio" name="multiple_choice_answers[${question.id}]" value="${answer.id}" class="form-radio h-4 w-4 text-black border-2 border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-200">
+                        ${answer.answer}
+                    </label>
+                `).join('')}
+            </div>
+        `;
 
             const multipleChoiceElement = multipleChoiceContainer.querySelector('div');
             setTimeout(() => multipleChoiceElement.classList.add('opacity-100'), 10);
@@ -211,64 +222,60 @@
             multipleChoiceContainer.classList.remove('hidden');
             questionContainer.classList.add('hidden');
             toggleButtons();
+            updateProgressBar();
         }
 
         function showNextQuestion() {
             if (currentSection === 'questions') {
                 if (currentQuestionIndex < questions.length - 1) {
                     currentQuestionIndex++;
-                    questionCounter++; // INCREMENTA AQUI
+                    questionCounter++;
                     showQuestion(currentQuestionIndex);
                 } else {
-                    // Vai para a primeira pergunta de múltipla escolha
                     currentSection = 'multipleChoice';
                     currentMultipleChoiceIndex = 0;
-                    questionCounter++; // INCREMENTA AQUI
+                    questionCounter++;
                     showMultipleChoiceQuestion(currentMultipleChoiceIndex);
                 }
             } else if (currentSection === 'multipleChoice') {
                 if (currentMultipleChoiceIndex < multipleChoiceQuestions.length - 1) {
                     currentMultipleChoiceIndex++;
-                    questionCounter++; // INCREMENTA AQUI
+                    questionCounter++;
                     showMultipleChoiceQuestion(currentMultipleChoiceIndex);
                 } else {
-                    // Vai para a tela de informações do cliente
                     questionScreen.classList.add('hidden');
                     clientInfoScreen.classList.remove('hidden');
                 }
             }
+            updateProgressBar();
         }
 
         function showPreviousQuestion() {
             if (currentSection === 'multipleChoice') {
                 if (currentMultipleChoiceIndex > 0) {
                     currentMultipleChoiceIndex--;
-                    questionCounter--; // DECREMENTA AQUI
+                    questionCounter--;
                     showMultipleChoiceQuestion(currentMultipleChoiceIndex);
                 } else {
-                    // Volta para a última pergunta normal
                     currentSection = 'questions';
                     currentQuestionIndex = questions.length - 1;
-                    questionCounter--; // DECREMENTA AQUI
+                    questionCounter--;
                     showQuestion(currentQuestionIndex);
                 }
             } else if (currentSection === 'questions') {
                 if (currentQuestionIndex > 0) {
                     currentQuestionIndex--;
-                    questionCounter--; // DECREMENTA AQUI
+                    questionCounter--;
                     showQuestion(currentQuestionIndex);
                 } else {
-                    // Volta para a tela inicial
                     questionScreen.classList.add('hidden');
                     introScreen.classList.remove('hidden');
                 }
             }
+            updateProgressBar();
         }
 
-
         function toggleButtons() {
-
-            //Botao voltar
             backButton.disabled = (currentSection === 'questions' && currentQuestionIndex === 0) ? false : false;
             if (currentSection === 'questions' && currentQuestionIndex === 0) {
                 backButton.textContent = "Voltar para Boas-vindas";
@@ -276,14 +283,12 @@
                 backButton.textContent = "Voltar";
             }
 
-            // Botão Próximo / Enviar
             if (currentSection === 'questions') {
                 const currentQuestionId = questions[currentQuestionIndex].id;
                 const isAnswered = document.querySelector(`input[name="answers[${currentQuestionId}]"]:checked`);
                 nextButton.disabled = !isAnswered;
                 nextButton.classList.remove('hidden');
                 submitButton.classList.add('hidden');
-
             } else if (currentSection === 'multipleChoice') {
                 const currentMultipleChoiceId = multipleChoiceQuestions[currentMultipleChoiceIndex].id;
                 const isAnswered = document.querySelector(`input[name="multiple_choice_answers[${currentMultipleChoiceId}]"]:checked`);
@@ -298,38 +303,37 @@
             }
         }
 
-
         startButton.addEventListener('click', function () {
             introScreen.classList.add('hidden');
             questionScreen.classList.remove('hidden');
             showQuestion(currentQuestionIndex);
+            updateProgressBar();
         });
 
         nextButton.addEventListener('click', showNextQuestion);
         backButton.addEventListener('click', showPreviousQuestion);
 
         questionContainer.addEventListener('change', function (event) {
-            const questionId = event.target.name.match(/\[(\d+)\]/)[1];  // Extrai o ID da pergunta
+            const questionId = event.target.name.match(/\[(\d+)\]/)[1];
             if (!answers[questionId]) {
-                answers[questionId] = []; // Inicializa o array se for a primeira resposta
+                answers[questionId] = [];
             }
             if (!answers[questionId].includes(event.target.value)) {
                 answers[questionId].push(event.target.value);
             }
-            toggleButtons(); // Atualiza o estado dos botões
+            toggleButtons();
         });
 
         multipleChoiceContainer.addEventListener('change', function (event) {
-            const questionId = event.target.name.match(/\[(\d+)\]/)[1]; // Extrai o ID da pergunta
-            multipleChoiceAnswers[questionId] = event.target.value; // Armazena a resposta (sobrescreve se já existir)
-            toggleButtons(); // Atualiza o estado dos botões
+            const questionId = event.target.name.match(/\[(\d+)\]/)[1];
+            multipleChoiceAnswers[questionId] = event.target.value;
+            toggleButtons();
         });
 
         submitButton.addEventListener('click', function () {
             questionScreen.classList.add('hidden');
             clientInfoScreen.classList.remove('hidden');
         });
-
 
         clientInfoForm.addEventListener('submit', function (e) {
             e.preventDefault();
@@ -350,7 +354,6 @@
             Object.keys(multipleChoiceAnswers).forEach(questionId => {
                 formData.append(`multiple_choice_answers[${questionId}]`, multipleChoiceAnswers[questionId]);
             });
-
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -380,6 +383,7 @@
                 });
         });
 
-        toggleButtons(); //Chamada inicial
+        toggleButtons();
+        updateProgressBar();
     });
 </script>

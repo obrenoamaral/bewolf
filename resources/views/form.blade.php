@@ -119,6 +119,11 @@
                            class="mt-1 p-2 block w-full rounded-md border border-gray-300 shadow-sm bg-transparent text-gray-100 text-sm"
                            required>
                 </div>
+                <div class="mb-4">
+                    <label for="como_chegou" class="block font-medium text-gray-100 text-sm">Como chegou até nós?</label>
+                    <input type="text" name="como_chegou" id="como_chegou"
+                           class="mt-1 p-2 block w-full rounded-md border border-gray-300 shadow-sm bg-transparent text-gray-100 text-sm">
+                </div>
                 <div class="mt-6">
                     <button type="submit"
                             class="bg-gray-100 text-black px-4 py-2 hover:bg-gray-800 hover:text-white rounded">Enviar

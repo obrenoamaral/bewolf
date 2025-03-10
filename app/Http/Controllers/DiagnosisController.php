@@ -105,7 +105,7 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
                 'solution' => optional($clientAnswer->answer)->solution,
                 'strength_weakness_title' => optional($clientAnswer->answer)->strength_weakness_title,
                 'strength_weakness' => optional($clientAnswer->answer)->strength_weakness,
-                '_source' => 'simple', // Chave para diferenciar (ainda útil na view)
+                '_source' => 'simple', // Chave para diferenciar
             ];
         }
 
@@ -131,13 +131,11 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
 
         }
 
-        // Ordenação por 'diagnosis_title' (OPCIONAL, mas recomendado)
-        usort($allPoints, function ($a, $b) {
-            return strcmp($a['diagnosis_title'], $b['diagnosis_title']);
-        });
+        // REMOVE a ordenação usort()
+        // usort($allPoints, function ($a, $b) { ... });
 
 
-        // Cálculo do peso total (mantido)
+        // Cálculo do peso total (USANDO O RELACIONAMENTO)
         $totalWeightSimple = $simpleAnswers->sum(function ($clientAnswer) {
             return $clientAnswer->answer ? $clientAnswer->answer->weight : 0;
         });

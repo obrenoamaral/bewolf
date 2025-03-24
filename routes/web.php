@@ -38,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/export', function () {
             return Excel::download(new ClientsExport, 'clients.xlsx');
         })->name('clients.export');
+        Route::post('/resend-email/{id}', [ClientController::class, 'resendEmail']);
     });
 
     // Diagnóstico

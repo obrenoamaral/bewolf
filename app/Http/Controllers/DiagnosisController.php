@@ -169,18 +169,18 @@ Os principais desafios enfrentados por esse empreendedor envolvem a validação 
     public function sendReportByEmail($client_id, $submission_id, $pdfStorage)
     {
         $client = Client::findOrFail($client_id);
-        $emailContent = EmailContent::first(); // Você pode buscar configurações de e-mail do banco de dados
+        $emailContent = EmailContent::first();
 
         if (!$emailContent) {
             \Log::error("Conteúdo do e-mail não encontrado ao tentar enviar relatório para o cliente $client_id.");
             return;
         }
 
-        $fixedEmail = 'contato@bwolf.com.br'; // E-mail fixo para cópia
+        $fixedEmail = 'contato@bwolf.com.br';
 
         Mail::to($client->email)
-            ->cc($fixedEmail) // Adiciona o e-mail fixo em cópia
-            ->send(new ReportMail($client, $pdfStorage, $emailContent)); // Passa $pdfStorage para o ReportMail
+            ->cc($fixedEmail)
+            ->send(new ReportMail($client, $pdfStorage, $emailContent));
     }
 
     public function previewReport($client_id, $submission_id)

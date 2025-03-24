@@ -12,6 +12,7 @@
                     <th class="p-2 text-left text-gray-100">Empresa</th>
                     <th class="p-2 text-left text-gray-100">E-mail</th>
                     <th class="p-2 text-left text-gray-100">Celular</th>
+                    <th class="p-2 text-left text-gray-100">Como chegou?</th>
                     <th class="p-2 text-left text-gray-100">Ações</th>
                 </tr>
                 </thead>
@@ -22,6 +23,8 @@
                         <td class="border-b border-b-gray-600 p-2 font-medium rounded-bl-lg text-gray-100 break-words">{{ $client->company }}</td>
                         <td class="border-b border-b-gray-600 p-2 font-medium rounded-bl-lg text-gray-100 break-words">{{ $client->email }}</td>
                         <td class="border-b border-b-gray-600 p-2 font-medium rounded-bl-lg text-gray-100">{{ $client->phone }}</td>
+                        <td class="border-b border-b-gray-600 p-2 font-medium rounded-bl-lg text-gray-100">{{ $client->como_chegou }}</td>
+
                         <td class="p-2 text-center flex gap-2 w-40">
                             <button class="btn btn-primary resend-email-btn text-white" data-client-id="{{ $client->id }}">Reenviar E-mail</button>
                         </td>
